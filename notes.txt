@@ -1,0 +1,9 @@
+Map should show circles w/ the amount of reviews in a general area around that circle to cut down on too many circles being rendered. 
+ - Requires the storing of addresses & their location on the map (unless i want to parse the location each time via address..)
+   - This requires querying an API to get the location of the address & then storing that in a database table, such as:
+   - Properties - ID : Address : X : Y      < -- Get this working first to get the circle navigation part done
+   - Attributes - ID : HOA?: View?: Cost: Overall Rating : Bathrooms : Bedrooms : .. etc    < -- Displayed in quick info prompt & detailed info prompt
+   - Reviews    - ID : ReviewerName : Review : Rating                                       < -- Displayed in detailed info prompt
+ - If 2 addresses are close (1 mile for example) then a circle is created with '2' in it. Clicking on it zooms in the map on the circle & shows the two addresses seperated...
+ - With more addresses, this process will scale up i.e a circle could have '32' reviews in it & clicking on it will split it into 4 cricles potentially
+ - CLUSTER ^
