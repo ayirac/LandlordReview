@@ -2,7 +2,8 @@
   "dependencies": {
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "query-string": "^8.1.0"
   },
   "name": "landlordreview",
   "version": "1.0.0",
