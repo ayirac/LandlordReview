@@ -47,27 +47,22 @@ def populate_reviews():
     for i in range(1, n+1):
         property_id = i
 
-        # Get the current rating count for the property from the Attributes table
-        cursor.execute("SELECT RatingCount FROM Attributes WHERE PropertyID = %s", (property_id,))
-        result = cursor.fetchone()
-        current_rating_count = result[0] if result else 0
-
         review_count = random.randint(1, 30)  # Random number of reviews (1 to 30)
 
         for j in range(review_count):
             reviewer_name = ''.join(random.choices(string.ascii_letters, k=8))  # Random reviewer name
-            review = ''.join(random.choices(string.ascii_letters, k=20))  # Random review text
-            rating = round(random.uniform(1, 5), 2)  # Random rating between 1 and 5
+            review = ''.join(random.choices(string.ascii_letters, k=50))  # Random review text
+            title = ''.join(random.choices(string.ascii_letters, k=16))  # Random review text
+            rating = round(random.uniform(1, 10)/2, 1)  # Random rating between 1 and 5
 
-            query = "INSERT INTO Reviews (PropertyID, ReviewerName, Review, Rating) " \
-                    "VALUES (%s, %s, %s, %s)"
-            values = (property_id, reviewer_name, review, rating)
+            query = "INSERT INTO Reviews (PropertyID, ReviewerName, Rating, Title, Text) " \
+                    "VALUES (%s, %s, %s, %s, %s)"
+            values = (property_id, reviewer_name, rating, title, review)
             cursor.execute(query, values)
 
         # Update the RatingCount in the Attributes table
-        updated_rating_count = current_rating_count + review_count
-        cursor.execute("UPDATE Attributes SET RatingCount = %s WHERE PropertyID = %s",
-                       (updated_rating_count, property_id))
+        cursor.execute("UPDATE Properties SET RatingCount = %s WHERE ID = %s",
+                       (review_count, property_id))
 
     conn.commit()
     cursor.close()

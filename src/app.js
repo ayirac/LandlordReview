@@ -51,14 +51,14 @@ connection.connect((err) => {
 const server = http.createServer((req, res) => {
   //const filePath = req.url === '/' ? 'index.html' : req.url;
   const parsedUrl = new URL(req.url, "http://127.0.0.1:3000") // change ip here later
-  parsedUrl.pathname = parsedUrl.pathname === "/" ? '/index.html' : parsedUrl.pathname;
+  parsedUrl.pathname = parsedUrl.pathname === "/" || parsedUrl.pathname === "/property.html" ? '/index.html' : parsedUrl.pathname;
   const contentType = getContentType(parsedUrl.pathname);
-
+  
+  
   if (parsedUrl.pathname === '/map.html') {
     if (!parsedUrl.searchParams.has('ids')) {
-      
-      // Perform a query to fetch the required data
-      connection.query('SELECT ID, Address, X, Y FROM PROPERTIES', (error, results) => {
+      // Perform a query to fetch the required data, right now i just send the entire table.
+      connection.query('SELECT ID, X, Y FROM Properties', (error, results) => {
         if (error) {
           console.error('Error executing query: ', error);
           res.statusCode = 500;
@@ -73,49 +73,121 @@ const server = http.createServer((req, res) => {
     }
     else {
       const selectedIds = parsedUrl.searchParams.get('ids').split(',');
-      // Perform a query to fetch the specific records based on the selected IDs
-      const propertyIds = selectedIds.join(',');
-      const query = `SELECT PropertyID, HOA, View, Cost, AvgRating, Bathrooms, Bedrooms, Name, RatingCount 
-                     FROM Attributes 
-                     WHERE PropertyID IN (${propertyIds}) 
-                     ORDER BY FIELD(PropertyID, ${propertyIds})`;
-      connection.query(query, (error, results) => {
-      if (error) {
-          console.error('Error executing query: ', error);
-          res.statusCode = 500;
-          res.setHeader('Content-Type', 'text/plain');
-          res.end('Internal Server Error');
-          return;
+      if (selectedIds.length > 1) {
+        // Perform a query to fetch the specific records based on the selected IDs
+        const propertyIds = selectedIds.join(',');
+        const query = `SELECT * 
+                      FROM Properties 
+                      WHERE ID IN (${propertyIds}) 
+                      ORDER BY FIELD(ID, ${propertyIds})`;
+        connection.query(query, (error, results) => {
+        if (error) {
+            console.error('Error executing query: ', error);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('Internal Server Error');
+            return;
+        }
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(results));
+        });
       }
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(results));
-      });
-    }
-  }
-  else if (parsedUrl.pathname === '/property.html') {
-    ///property.html?id=
-    if (parsedUrl.searchParams.has('id')) {
-      let id = parsedUrl.searchParams.get('id');
 
-      const query = `SELECT PropertyID, HOA, View, Cost, AvgRating, Bathrooms, Bedrooms, Name, RatingCount 
-                     FROM Attributes 
-                     WHERE PropertyID IN (${id}) 
-                     ORDER BY FIELD(PropertyID, ${id})`;
-      connection.query(query, (error, results) => {
-      if (error) {
-          console.error('Error executing query: ', error);
+    }
+  }
+  else if (parsedUrl.pathname === '/getproperty.html') { // Send floorplan & property json data
+    if (parsedUrl.searchParams.has('id')) {
+      const id = parsedUrl.searchParams.get('id');
+  
+      // Properties
+      const query = `SELECT * 
+                     FROM Properties 
+                     WHERE ID IN (${id}) 
+                     ORDER BY FIELD(ID, ${id})`;
+      connection.query(query, (error, propertyResults) => {
+        if (error) {
+          console.error('Error executing property query: ', error);
           res.statusCode = 500;
           res.setHeader('Content-Type', 'text/plain');
           res.end('Internal Server Error');
           return;
-      }
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(results));
+        }
+  
+        // Floorplans
+        const query1 = `SELECT * 
+                      FROM FloorPlans 
+                      WHERE PropertyID IN (${id}) 
+                      ORDER BY FIELD(ID, ${id})`;
+        connection.query(query1, (error, floorPlanResults) => {
+          if (error) {
+            console.error('Error executing floor plan query: ', error);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('Internal Server Error');
+            return;
+          }
+
+        // Get tag to id mapping
+        const queryTagTypes = `SELECT * 
+                      FROM Tags`;
+        connection.query(queryTagTypes, (error, tagTypesResults) => {
+          if (error) {
+            console.error('Error executing floor plan query: ', error);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('Internal Server Error');
+            return;
+          }     
+          // PropertyTags
+          const query2 = `SELECT * 
+                        FROM PropertyTags 
+                        WHERE PropertyID IN (${id})`;
+          connection.query(query2, (error, tagsResults) => {
+            if (error) {
+              console.error('Error executing floor plan query: ', error);
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'text/plain');
+              res.end('Internal Server Error');
+              return;
+            }
+
+            const tagNames = [];
+            for (const tag of tagsResults) {
+              for (const tagType of tagTypesResults) {
+                if (tag.TagID === tagType.ID) {
+                  tagNames.push(tagType.Title);
+                }
+              }
+            } 
+            const query3 = `SELECT * 
+                        FROM Reviews 
+                        WHERE PropertyID IN (${id})`;
+          connection.query(query3, (error, reviewResults) => {
+            if (error) {
+              console.error('Error executing review plan query: ', error);
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'text/plain');
+              res.end('Internal Server Error');
+              return;
+            }      
+          const responseData = {
+            FloorPlans: floorPlanResults,
+            PropertyData: propertyResults,
+            Tags: tagNames,
+            Reviews: reviewResults
+          };
+  
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(responseData));
+        });
       });
+    });
+    }); 
+    });
     }
-  }
+  }  
   else if (contentType === "image/png" || contentType === "image/jpeg" || contentType === "image/svg+xml" ||contentType === 'text/html' || contentType === 'text/javascript' || contentType === 'text/css') {
       const file = path.join(parentDirectory, parsedUrl.pathname);
       fs.readFile(file, (err, content) => {
