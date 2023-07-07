@@ -28,9 +28,10 @@ header img {
   top: 50%;
   transform: translateY(-50%);
   max-height: 100%;
+  cursor:pointer;
 }
 
-.logo-container {
+#logo-container {
   flex-grow: 0;
 }
 
@@ -608,10 +609,10 @@ input[type=range]:focus {
 
 .dropdown-content a:hover {background-color: #f1f1f1}
 
-.property-page-container {
+#property-page-container {
   color: black;
   flex-grow: 1;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding-top: 45px; /* Add margin to account for the height of the fixed header */
@@ -626,7 +627,7 @@ input[type=range]:focus {
 
 .property-details {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two columns with equal width */
+  grid-template-columns: repeat(2, 38%); /* Two columns with equal width */
   grid-gap: 5px;
   padding: 0px 5px 5px 10px;
   border-bottom: 1px solid #e0e0e0;
@@ -661,7 +662,7 @@ input[type=range]:focus {
 }
 
 .floor-plan {
-  background-color: #f0f0f0;
+  background-color: #fbfbfb;
   padding: 10px;
   margin-top: 10px;
   box-shadow: 2px 4px 4px rgba(0, 0, 0, 0.3);
@@ -760,6 +761,7 @@ input[type=range]:focus {
   position: relative;
   display: flex;
   margin: auto;
+  box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.2);
 }
 
 .slideshow-left {
@@ -805,7 +807,7 @@ input[type=range]:focus {
 
 .slideshow {
   padding: 10px 10px 0px 10px;
-  width: 80%;
+  flex-basis: 75%;
 }
 
 .top-content {
@@ -826,20 +828,21 @@ input[type=range]:focus {
 .property-tags {
   margin: 0;
   padding: 10px;
-  width: 20%;
+  width: 100%;
+  height: 100%;
   display: inline-flex;
   align-content: flex-start;
+  align-items: center;
   flex-wrap: wrap;
-  box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.2);
 }
 
 
 .tag-container {
   margin: 0px 0px 5px 5px;
   padding: 5px 10px;
-  background-color: #f1f1f1;
-  border: 1px solid #999;
-  border-radius: 4px;
+  background-color: #f9f4f4;
+border: 2px solid #c4c4c4;
+  border-radius: 12px;
 }
 
 .property-review-component {
@@ -910,3 +913,19 @@ input[type=range]:focus {
   display: inline-block;
 }
 
+.property-tag-cont {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  flex-basis: 25%;
+  box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.2);
+}
+
+.property-tag-cont h3 {
+  margin: 0;
+  padding: 5px 5px 5px 5px;
+}
+
+.star-filter {
+  font-size: 18px;
+}

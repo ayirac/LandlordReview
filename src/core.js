@@ -28,6 +28,66 @@ function currentSlide(n) {
   showSlides(slideIndex = n);
 }
 
+function addReviews(thresh, reviewsContainer, data) {
+  for (let i = 0; i < data.Reviews.length; i++) {
+    console.log(data.Reviews[i].Rating + " and " + thresh);
+    if (data.Reviews[i].Rating < thresh)
+      continue;
+
+    var reviewData = data.Reviews[i];
+    var reviewWrap = document.createElement('div');
+    reviewWrap.className = 'property-review';
+
+    var reviewName = document.createElement('p');
+    reviewName.className = 'property-review-name';
+    reviewName.innerText = reviewData.ReviewerName;
+    reviewWrap.append(reviewName);
+
+    // Show Name, title, review, and the text
+    // Name - Title - 4/5 Stars
+    var reviewStarRatingWrapper = document.createElement('div');
+    reviewStarRatingWrapper.className = 'property-star-rating-wrapper';
+    var reviewTop = getReviewStarContainer(data.Reviews[i], false);
+    reviewTop.className = 'property-review-top';
+
+    var reviewTitle = document.createElement('span');
+    reviewTitle.className = 'property-review-title';
+    reviewTitle.innerText = reviewData.Title;
+
+    reviewTop.append(reviewTitle);
+    reviewStarRatingWrapper.append(reviewTop);
+    reviewWrap.append(reviewStarRatingWrapper);
+
+    var reviewDate = document.createElement('p');
+    reviewDate.className = 'property-review-date';
+    reviewDate.innerText = "Reviewed on July 5, 2023";
+    reviewWrap.append(reviewDate);
+
+    // Text
+    var reviewText = document.createElement('p');
+    reviewText.className = 'property-review-text';
+    reviewText.innerText = reviewData.Text;
+    reviewWrap.append(reviewText);
+
+    reviewsContainer.append(reviewWrap);
+  }
+}
+
+function getReviewStarFilterContainer() {
+  var starFilterCont = document.createElement('div');
+  starFilterCont.className = 'star-filter-container';
+
+  // Add full stars
+  for (let j = 0; j < 5; j++) {
+    var starRating = document.createElement('div');
+    starRating.classList.add('star-rating');
+    starRating.classList.add('star-filter');
+    starRating.textContent = '★';
+    starFilterCont.appendChild(starRating);
+  }
+  return starFilterCont;
+}
+
 function getReviewStarContainer(property, addText) {
   var reviewContainer = document.createElement('div');
   reviewContainer.className = 'review-container';
@@ -37,10 +97,12 @@ function getReviewStarContainer(property, addText) {
   starRatingContainer.className = 'star-rating-container';
   
   // Calculate the number of stars based on the rating
-  if (addText)
+  if (addText) {
     var rating = property.AvgRating;
-  else
+  }
+  else {
     var rating = property.Rating;
+  }
   var numStars = Math.round(rating * 2) / 2; // Round to the nearest 0.5
   var fullStars = Math.floor(numStars);
   var halfStar = numStars % 1 !== 0;
@@ -102,8 +164,12 @@ function openPropertyPage(id) {
   
   // Add display: none to frame-container, load in a detailed-property page dynamnically
   document.getElementById('frame-container').style.display = 'none';
-  var propertyPageContainer = document.createElement('div');
-  propertyPageContainer.className = 'property-page-container';
+  var propertyPageW = document.getElementById('property-page-container');
+  propertyPageW.style.display = 'flex';
+  propertyPageW.innerHTML = '';
+
+  // instead of making 'property-page-container', find 'property-page-container'
+  var propertyPageContainer = document.getElementById('property-page-container');
 
   var propertyPage = document.createElement('div');
   propertyPage.className = 'property-page';
@@ -252,6 +318,13 @@ function openPropertyPage(id) {
         If a tag value is 1, create element of that tag w/ the text & add to box
         Append container to document
       */
+      var propertyTagCont = document.createElement('div');
+      propertyTagCont.className = 'property-tag-cont';
+
+      var propertyTagTitle = document.createElement('h3');
+      propertyTagTitle.innerText = 'Tags';
+      propertyTagCont.append(propertyTagTitle);
+
       var propertyTags = document.createElement('div');
       propertyTags.className = 'property-tags';
 
@@ -262,7 +335,8 @@ function openPropertyPage(id) {
         propertyTags.appendChild(tagContainer);
       });
 
-      topContentContainer.append(propertyTags);
+      propertyTagCont.append(propertyTags);
+      topContentContainer.append(propertyTagCont);
       propertyPage.append(topContentContainer);
       // Main details
       var propertyDetails = document.createElement('div');
@@ -378,52 +452,64 @@ function openPropertyPage(id) {
       var reviewsContainer = document.createElement('div');
       reviewsContainer.className = 'property-reviews-container';
 
+      // Left side review section
       var reviewLeftCont = document.createElement('div');
       reviewLeftCont.className = 'property-review-left-container';
 
+      var filterStarCont = getReviewStarFilterContainer();
+      reviewLeftCont.append(filterStarCont);
+
+      // add handler for starFilter here for now
+      // hanndler for filter-stars
+      var filteredStars = 5;
+      const starFilterContainers = reviewLeftCont.querySelectorAll('.star-filter-container');
+      console.log(starFilterContainers);
+      starFilterContainers.forEach((container) => {
+        const stars = container.querySelectorAll('.star-filter');
+        stars.forEach((star, index) => {
+          star.addEventListener('mouseover', () => {
+            // Change the color of stars from left to right when hovering over a star
+            for (let i = 0; i <= index; i++) {
+              stars[i].textContent = '★';
+            }
+            console.log(index);
+            for (let i = index+1; i < 5; i++) {
+              stars[i].textContent = '☆';
+              console.log('k');
+            }
+          });
+          star.addEventListener('click', () => {
+            filteredStars = index+1; // cont here!, messy AFF
+            // go through all current reviews & filter out any dataset.value < index+1
+            // ways to filter? delete entire div contents & add reviews? k?
+            if (reviewRightCont.firstChild) {
+              reviewRightCont.removeChild(reviewRightCont.firstChild);
+            }
+            reviewsContainer.innerHTML = '';
+            addReviews(filteredStars, reviewsContainer, data);
+            reviewRightCont.append(reviewsContainer);
+          });
+          
+          container.addEventListener('mouseleave', () => {
+            for (let i = 0; i < filteredStars; i++) {
+              stars[i].textContent = '★';
+            }
+            for (let i = index; i > 5; i++) {
+              stars[i].textContent = '☆';
+            }
+          });
+        });
+      });
+
+
+      // Right side review section
       var reviewRightCont = document.createElement('div');
       reviewRightCont.className = 'property-review-right-container';
 
       // querry each review for the specific property & then for each review, loop through
       // create a new div, property-review
-      for (let i = 0; i < data.Reviews.length; i++) {
-        var reviewData = data.Reviews[i];
-        var reviewWrap = document.createElement('div');
-        reviewWrap.className = 'property-review';
-
-        var reviewName = document.createElement('p');
-        reviewName.className = 'property-review-name';
-        reviewName.innerText = reviewData.ReviewerName;
-        reviewWrap.append(reviewName);
-
-        // Show Name, title, review, and the text
-        // Name - Title - 4/5 Stars
-        var reviewStarRatingWrapper = document.createElement('div');
-        reviewStarRatingWrapper.className = 'property-star-rating-wrapper';
-        var reviewTop = getReviewStarContainer(data.Reviews[i], false);
-        reviewTop.className = 'property-review-top';
-
-        var reviewTitle = document.createElement('span');
-        reviewTitle.className = 'property-review-title';
-        reviewTitle.innerText = reviewData.Title;
-
-        reviewTop.append(reviewTitle);
-        reviewStarRatingWrapper.append(reviewTop);
-        reviewWrap.append(reviewStarRatingWrapper);
-
-        var reviewDate = document.createElement('p');
-        reviewDate.className = 'property-review-date';
-        reviewDate.innerText = "Reviewed on July 5, 2023";
-        reviewWrap.append(reviewDate);
-
-        // Text
-        var reviewText = document.createElement('p');
-        reviewText.className = 'property-review-text';
-        reviewText.innerText = reviewData.Text;
-        reviewWrap.append(reviewText);
-
-        reviewsContainer.append(reviewWrap);
-      }
+      // HERE HERE HERE
+      addReviews(0, reviewsContainer, data);
       reviewRightCont.append(reviewsContainer);
 
       // Add a review section
@@ -470,9 +556,6 @@ function initializeMap() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const propertyId = urlParams.get('id');
-    if (propertyId) {
-      openPropertyPage(propertyId);
-    }
 
 
     // Add click event listeners to the popup elements
@@ -530,8 +613,6 @@ function initializeMap() {
       }
     });
 
-
-    // Add postContainer handler for checking when a post is clicked on
     // Add postContainer handler for checking when a post is clicked on
     postContainer.addEventListener('click', function(event) {
       var clickedElement = event.target;
@@ -568,6 +649,7 @@ function initializeMap() {
         });
           let visibleMarkers = [];
           let bounds = map.getBounds();
+          console.log(bounds);
 
           cluster.eachLayer(function (marker) {
             var markerLatLng = marker.getLatLng();
@@ -592,7 +674,6 @@ function initializeMap() {
           }
         });
         displayVisibleMarkersData(visibleMarkers);
-
       });
 }
 function displayVisibleMarkersData(markers) {
@@ -612,6 +693,7 @@ function displayVisibleMarkersData(markers) {
   let ids = markerIds.join(',');
   document.getElementById('frame-container').scrollTop = 0;
   //collect data from all visible markers
+
   fetch('/map.html?selected=true&ids=' + ids)
    .then(response => response.json())
    .then(data => {
@@ -681,4 +763,35 @@ function displayVisibleMarkersData(markers) {
   });
 }
 
-document.addEventListener('DOMContentLoaded', initializeMap);
+var initAlready = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if the current page is the home page ("/")
+  const urlParams = new URLSearchParams(window.location.search);
+  const propertyId = urlParams.get('id');
+  // init shit, reoganize this
+
+  const logoContainer = document.getElementById('logo-container');
+  const frameContainer = document.getElementById('frame-container');
+  const propertPageCont = document.getElementById('property-page-container');
+
+  // Clicked on logo handler
+  logoContainer.addEventListener('click', function() {
+    frameContainer.style.display = 'flex';
+    propertPageCont.style.display = 'none';
+    document.getElementById('filter-container').style.display = 'flex';
+    history.pushState(null, null, window.location.origin);
+
+    if (!initAlready) {
+      initializeMap();
+      initAlready = true;
+    }
+  });
+  if (propertyId) {
+    openPropertyPage(propertyId);
+  }
+  if (window.location.pathname === '/') {
+    initializeMap();
+    initAlready = true;
+  }
+});
