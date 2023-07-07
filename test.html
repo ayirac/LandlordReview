@@ -1,0 +1,118 @@
+<html>
+    <head>
+        <style>
+            body {
+                color: black
+            }
+
+            .progress-bar-wrapper {
+                width: 275px;
+                padding: 2px;
+                display: flex;
+            }
+
+            .progress-bar-container {
+                border: 1px solid rgb(201, 201, 201);
+                border-radius: 5px;
+                height: 16px;
+                width: 100%;
+            }
+            
+            .progress-bar-inner {
+                background-color: rgb(255, 146, 4);
+                border-radius: 4px;
+                height: 100%;
+            }
+
+            .progress-bar-container:hover {
+                border: 1px solid rgb(236, 135, 19);
+                background-color: rgba(238, 226, 117, 0.192);
+            }
+
+            .text-cont {
+                padding-right: 20px;
+            }
+
+            .link-block {
+                padding-right: 20px;
+                flex-basis: 45%;
+            }
+
+            .text-cont a {
+                color: #008197
+            }
+
+            .text-cont a:link {
+                text-decoration: black;
+            }
+
+            .text-cont a:hover {
+                text-decoration: underline;
+                color: rgb(236, 135, 19);
+            }
+
+            .text-cont a:focus {
+                text-decoration: underline;
+            }
+
+            .review-star-filter-container {
+                padding: 5px;
+            }
+
+        </style>
+    </head>
+<body>
+    <div class="review-star-filter-container">
+        <div class="progress-bar-wrapper">
+            <span class="text-cont"><a href="#1">5 Star</a></span>
+            <a class="link-block" href="#1">
+                <div class="progress-bar-container">
+                    <div class="progress-bar-inner" style="width: 65%;"></div>
+                </div>
+            </a>
+            <span class="text-cont"><a href="#1">65%</a></span>
+        </div>
+    
+        <div class="progress-bar-wrapper">
+            <span class="text-cont"><a href="#1">4 Star</a></span>
+            <a class="link-block" href="#1">
+                <div class="progress-bar-container">
+                    <div class="progress-bar-inner" style="width: 20%;"></div>
+                </div>
+            </a>
+            <span class="text-cont"><a href="#1">20%</a></span>
+            
+        </div>
+    
+        <div class="progress-bar-wrapper">
+            <span class="text-cont"><a href="#1">3 Star</a></span>
+            <a class="link-block" href="#1">
+                <div class="progress-bar-container">
+                    <div class="progress-bar-inner" style="width: 7%;"></div>
+                </div>
+            </a>
+            <span class="text-cont"><a href="#1">7%</a></span>
+        </div>
+    
+        <div class="progress-bar-wrapper">
+            <span class="text-cont"><a href="#1">2 Star</a></span>
+            <a class="link-block" href="#1">
+                <div class="progress-bar-container">
+                    <div class="progress-bar-inner" style="width: 3%;"></div>
+                </div>
+            </a>
+            <span class="text-cont"><a href="#1">3%</a></span>
+        </div>
+
+        <div class="progress-bar-wrapper">
+            <span class="text-cont"><a href="#1">1 Star</a></span>
+            <a class="link-block" href="#1">
+                <div class="progress-bar-container">
+                    <div class="progress-bar-inner" style="width: 2%;"></div>
+                </div>
+            </a>
+            <span class="text-cont"><a href="#1">2%</a></span>
+        </div>
+    </div>
+</body>
+</html>

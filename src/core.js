@@ -73,6 +73,59 @@ function addReviews(thresh, reviewsContainer, data) {
   }
 }
 
+function generateHTMLData() {
+  const div = document.createElement('div');
+  div.className = 'review-star-filter-container';
+
+  const progressBarWrappers = [
+      { star: '5 Star', width: '65%', percentage: '65%' },
+      { star: '4 Star', width: '20%', percentage: '20%' },
+      { star: '3 Star', width: '7%', percentage: '7%' },
+      { star: '2 Star', width: '3%', percentage: '3%' },
+      { star: '1 Star', width: '2%', percentage: '2%' }
+  ];
+
+  progressBarWrappers.forEach(item => {
+      const progressBarWrapper = document.createElement('div');
+      progressBarWrapper.className = 'progress-bar-wrapper';
+
+      const starSpan = document.createElement('span');
+      starSpan.className = 'text-cont';
+      const starLink = document.createElement('a');
+      starLink.href = '#1';
+      starLink.textContent = item.star;
+      starSpan.appendChild(starLink);
+      progressBarWrapper.appendChild(starSpan);
+
+      const linkBlock = document.createElement('a');
+      linkBlock.className = 'link-block';
+      linkBlock.href = '#1';
+
+      const progressBarContainer = document.createElement('div');
+      progressBarContainer.className = 'progress-bar-container';
+
+      const progressBarInner = document.createElement('div');
+      progressBarInner.className = 'progress-bar-inner';
+      progressBarInner.style.width = item.width;
+      progressBarContainer.appendChild(progressBarInner);
+
+      linkBlock.appendChild(progressBarContainer);
+      progressBarWrapper.appendChild(linkBlock);
+
+      const percentageSpan = document.createElement('span');
+      percentageSpan.className = 'text-cont';
+      const percentageLink = document.createElement('a');
+      percentageLink.href = '#1';
+      percentageLink.textContent = item.percentage;
+      percentageSpan.appendChild(percentageLink);
+      progressBarWrapper.appendChild(percentageSpan);
+
+      div.appendChild(progressBarWrapper);
+  });
+
+  return div;
+}
+
 function getReviewStarFilterContainer() {
   var starFilterCont = document.createElement('div');
   starFilterCont.className = 'star-filter-container';
@@ -396,7 +449,7 @@ function openPropertyPage(id) {
         planName.className = 'floor-plan-name';
         planName.innerText = 'Plan ' + (i+1);
         floorPlan.append(planName);
-
+        // cont here, need the deposit to be its own div & value to be its own in a table-esque way.
         var planSecurityDeposit = document.createElement('p');
         planSecurityDeposit.className = 'floor-plan-security-deposit';
         planSecurityDeposit.innerText = 'Deposit: ' + plan.SecurityDeposit;
@@ -456,8 +509,13 @@ function openPropertyPage(id) {
       var reviewLeftCont = document.createElement('div');
       reviewLeftCont.className = 'property-review-left-container';
 
+      var reviewCont = getReviewStarContainer(data.PropertyData[0], true);
+      reviewCont.style.alignSelf = 'center';
       var filterStarCont = getReviewStarFilterContainer();
+      var progressBarWrapper = generateHTMLData();
+      reviewLeftCont.append(reviewCont);
       reviewLeftCont.append(filterStarCont);
+      reviewLeftCont.append(progressBarWrapper);
 
       // add handler for starFilter here for now
       // hanndler for filter-stars
@@ -649,7 +707,6 @@ function initializeMap() {
         });
           let visibleMarkers = [];
           let bounds = map.getBounds();
-          console.log(bounds);
 
           cluster.eachLayer(function (marker) {
             var markerLatLng = marker.getLatLng();
