@@ -30,13 +30,13 @@ function currentSlide(n) {
 
 function addReviews(thresh, reviewsContainer, data) {
   for (let i = 0; i < data.Reviews.length; i++) {
-    console.log(data.Reviews[i].Rating + " and " + thresh);
     if (data.Reviews[i].Rating < thresh)
       continue;
 
     var reviewData = data.Reviews[i];
     var reviewWrap = document.createElement('div');
-    reviewWrap.className = 'property-review';
+    reviewWrap.classList.add('property-review');
+  
 
     var reviewName = document.createElement('p');
     reviewName.className = 'property-review-name';
@@ -76,6 +76,8 @@ function addReviews(thresh, reviewsContainer, data) {
 function generateHTMLData() {
   const div = document.createElement('div');
   div.className = 'review-star-filter-container';
+
+  // need to go through data.Reviews & calculate the % for each star, cont
 
   const progressBarWrappers = [
       { star: '5 Star', width: '65%', percentage: '65%' },
@@ -211,6 +213,159 @@ function showSlides(n) {
   slides[slideIndex-1].style.display = "block";  
   slides[slideIndex+1].style.display = "block";  
   slides[slideIndex+2].style.display = "block";  
+}
+
+function createPropertyAddComponent() {
+  //Create wrapper thatll hold the container & title of comp
+  const reviewAddWrapper = document.createElement('div');
+  reviewAddWrapper.id = 'review-add-wrapper';
+
+  const reviewAddTitle = document.createElement('h3');
+  reviewAddTitle.innerText = 'Leave a Review'
+  
+
+  reviewAddWrapper.append(reviewAddTitle);
+
+  // Create the main container
+  const reviewAddContainer = document.createElement('div');
+  reviewAddContainer.id = 'review-add-container';
+
+  // Create the left section
+  const reviewAddLeft = document.createElement('div');
+  reviewAddLeft.id = 'review-add-left';
+
+  // Create the text container
+  const reviewAddTextContainer = document.createElement('div');
+  reviewAddTextContainer.id = 'review-add-text-container';
+
+  // HERE
+ 
+  const reviewAddTop = document.createElement('div');
+  reviewAddTop.id = 'review-add-top';
+
+  const reviewAddStarContainer = getReviewStarFilterContainer();
+  // Create the input for the detail title
+  const reviewAddDetailTitle = document.createElement('input');
+  reviewAddDetailTitle.id = 'review-add-detail-title';
+  reviewAddDetailTitle.placeholder = 'Title...';
+  reviewAddTextContainer.appendChild(reviewAddDetailTitle);
+
+  reviewAddTop.append(reviewAddDetailTitle);
+  reviewAddTop.append(reviewAddStarContainer);
+  reviewAddTextContainer.append(reviewAddTop);
+
+  // HERE
+
+
+  // Create the textarea for the review text
+  const reviewAddText = document.createElement('textarea');
+  reviewAddText.id = 'review-add-text';
+  reviewAddText.placeholder = 'Type your review here...';
+  reviewAddTextContainer.appendChild(reviewAddText);
+
+  // Append the text container to the left section
+  reviewAddLeft.appendChild(reviewAddTextContainer);
+
+  // Create the submit button
+  const reviewAddSubmit = document.createElement('button');
+  reviewAddSubmit.id = 'review-add-submit';
+  reviewAddSubmit.textContent = 'Submit';
+  reviewAddLeft.appendChild(reviewAddSubmit);
+
+  // Append the left section to the main container
+  reviewAddContainer.appendChild(reviewAddLeft);
+
+  // Create the right section
+  const reviewAddRight = document.createElement('div');
+  reviewAddRight.id = 'review-add-right';
+
+  // Create the tag container
+  const reviewAddTagContainer = document.createElement('div');
+  reviewAddTagContainer.id = 'review-add-tag-container';
+
+  // Create the header for property tags
+  const headerDet = document.createElement('p');
+  headerDet.id = 'header-det';
+  headerDet.textContent = 'Property Tags';
+  reviewAddTagContainer.appendChild(headerDet);
+
+  // Create the input for adding tags
+  const tagAddText = document.createElement('input');
+  tagAddText.id = 'tag-add-text';
+  tagAddText.placeholder = 'Type tags here...';
+  reviewAddTagContainer.appendChild(tagAddText);
+
+  // Create the div for property tags
+  const propertyTags = document.createElement('div');
+  propertyTags.id = 'property-tags';
+  reviewAddTagContainer.appendChild(propertyTags);
+
+  // Append the tag container to the right section
+  reviewAddRight.appendChild(reviewAddTagContainer);
+
+  // Create the detail wrapper
+  const reviewAddDetailWrapper = document.createElement('div');
+  reviewAddDetailWrapper.id = 'review-add-detail-wrapper';
+
+  // Create the detail title section
+  const reviewAddDetailTitleSection = document.createElement('div');
+  reviewAddDetailTitleSection.id = 'review-add-detail-title';
+
+  // Create the header for optional property information
+  const optionalPropertyInfoHeader = document.createElement('p');
+  optionalPropertyInfoHeader.id = 'header-det';
+  optionalPropertyInfoHeader.textContent = 'Optional Property Information';
+  reviewAddDetailTitleSection.appendChild(optionalPropertyInfoHeader);
+
+  // Append the detail title section to the detail wrapper
+  reviewAddDetailWrapper.appendChild(reviewAddDetailTitleSection);
+
+  // Create the detail container
+  const reviewAddDetailContainer = document.createElement('div');
+  reviewAddDetailContainer.id = 'review-add-detail-container';
+
+  // Create the input containers for different property details
+  const propertyDetails = [
+    { label: 'Bedrooms', id: 'bedrooms-input', placeholder: 'n/a' },
+    { label: 'Bathrooms', id: 'bathrooms-input', placeholder: 'n/a' },
+    { label: 'Name', id: 'name-input', placeholder: 'n/a' },
+    { label: 'Address', id: 'address-input', placeholder: 'n/a' },
+    { label: 'Monthly Rent', id: 'monthly-rent-input', placeholder: 'n/a' },
+    { label: 'Security Deposit', id: 'security-deposit-input', placeholder: 'n/a' },
+    { label: 'Term', id: 'term-input', placeholder: 'n/a' },
+  ];
+
+  propertyDetails.forEach(detail => {
+    const inputContainer = document.createElement('div');
+    inputContainer.className = 'input-container';
+
+    const label = document.createElement('label');
+    label.htmlFor = detail.id;
+    label.className = 'input-title';
+    label.textContent = detail.label;
+    inputContainer.appendChild(label);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = detail.id;
+    input.className = 'input-field';
+    input.placeholder = detail.placeholder;
+    inputContainer.appendChild(input);
+
+    reviewAddDetailContainer.appendChild(inputContainer);
+  });
+
+  // Append the detail container to the detail wrapper
+  reviewAddDetailWrapper.appendChild(reviewAddDetailContainer);
+
+  // Append the detail wrapper to the right section
+  reviewAddRight.appendChild(reviewAddDetailWrapper);
+
+  // Append the right section to the main container
+  reviewAddContainer.appendChild(reviewAddRight);
+
+  reviewAddWrapper.append(reviewAddContainer);
+  return reviewAddWrapper;
 }
 
 function openPropertyPage(id) {
@@ -499,7 +654,7 @@ function openPropertyPage(id) {
       reviewBotHead.className = 'property-review-bottom-container'
 
       var reviewHeader = document.createElement('h3');
-      reviewHeader.innerText = 'Tentant Reviews:';
+      reviewHeader.innerText = 'Tentant Reviews';
       reviewComp.append(reviewHeader);
 
       var reviewsContainer = document.createElement('div');
@@ -511,54 +666,17 @@ function openPropertyPage(id) {
 
       var reviewCont = getReviewStarContainer(data.PropertyData[0], true);
       reviewCont.style.alignSelf = 'center';
-      var filterStarCont = getReviewStarFilterContainer();
+      reviewCont.style.fontSize = '18px';
+      var filterStarCont = getReviewStarFilterContainer(); //stars added here
       var progressBarWrapper = generateHTMLData();
+
+      var reviewFilterText = document.createElement('h4');
+      reviewFilterText.innerText = 'Filters';
+      
       reviewLeftCont.append(reviewCont);
+      reviewLeftCont.append(reviewFilterText);
       reviewLeftCont.append(filterStarCont);
       reviewLeftCont.append(progressBarWrapper);
-
-      // add handler for starFilter here for now
-      // hanndler for filter-stars
-      var filteredStars = 5;
-      const starFilterContainers = reviewLeftCont.querySelectorAll('.star-filter-container');
-      console.log(starFilterContainers);
-      starFilterContainers.forEach((container) => {
-        const stars = container.querySelectorAll('.star-filter');
-        stars.forEach((star, index) => {
-          star.addEventListener('mouseover', () => {
-            // Change the color of stars from left to right when hovering over a star
-            for (let i = 0; i <= index; i++) {
-              stars[i].textContent = '★';
-            }
-            console.log(index);
-            for (let i = index+1; i < 5; i++) {
-              stars[i].textContent = '☆';
-              console.log('k');
-            }
-          });
-          star.addEventListener('click', () => {
-            filteredStars = index+1; // cont here!, messy AFF
-            // go through all current reviews & filter out any dataset.value < index+1
-            // ways to filter? delete entire div contents & add reviews? k?
-            if (reviewRightCont.firstChild) {
-              reviewRightCont.removeChild(reviewRightCont.firstChild);
-            }
-            reviewsContainer.innerHTML = '';
-            addReviews(filteredStars, reviewsContainer, data);
-            reviewRightCont.append(reviewsContainer);
-          });
-          
-          container.addEventListener('mouseleave', () => {
-            for (let i = 0; i < filteredStars; i++) {
-              stars[i].textContent = '★';
-            }
-            for (let i = index; i > 5; i++) {
-              stars[i].textContent = '☆';
-            }
-          });
-        });
-      });
-
 
       // Right side review section
       var reviewRightCont = document.createElement('div');
@@ -579,14 +697,98 @@ function openPropertyPage(id) {
       
       reviewComp.append(reviewBotHead);
       propertyPage.append(reviewComp);
+
+      var propertyAddComponent = createPropertyAddComponent(); // stars added here
+      propertyPage.append(propertyAddComponent);
+
+      propertyPageContainer.append(propertyPage);
+      document.body.append(propertyPageContainer);
+
+
+      // HANDLERS
+      // Property review tag auto correct element
+      const textarea = document.getElementById('tag-add-text');
+      const tagContainer = document.getElementById('property-tags');
+      const addedTags = new Set();
+
+      var tempTagdata = { Tags: ['HOA', 'Garage'] };
+
+      textarea.addEventListener('keyup', function (event) {
+        if (event.key === 'Enter' || event.key === ',') {
+          const tagsArray = textarea.value.split(/,|\n/).map(tag => tag.trim()).filter(tag => tag !== '');
+          const tag = tagsArray.length > 0 ? tagsArray[0] : '';
+          textarea.value = '';
+
+          // Check if user input exists in tag array, if so add it as a tag
+          for (let i = 0; i < tempTagdata.Tags.length; i++) {
+            let lowerCheckTag = tempTagdata.Tags[i].toLowerCase();
+            if (tag.toLowerCase() === lowerCheckTag) {
+              if (!addedTags.has(tag)) {
+                const tagDiv = document.createElement('div');
+                tagDiv.className = 'tag-container';
+                tagDiv.textContent = tempTagdata.Tags[i];
+                tagContainer.appendChild(tagDiv);
+                addedTags.add(tag);
+              }
+              break;
+            }
+          }
+        }
+      });
+       // add handler for starFilter here for now
+      // hanndler for filter-stars
+      var filteredStars = 5;
+      const starFilterContainers = document.querySelectorAll('.star-filter-container');
+      starFilterContainers.forEach((container) => {
+        const parentElement = container.parentNode;
+        const stars = container.querySelectorAll('.star-filter');
+        stars.forEach((star, index) => {
+          star.addEventListener('mouseover', () => {
+            // Change the color of stars from left to right when hovering over a star
+            for (let i = 0; i <= index; i++) {
+              stars[i].textContent = '★';
+            }
+            for (let i = index+1; i < 5; i++) {
+              stars[i].textContent = '☆';
+            }
+          });
+          star.addEventListener('click', () => {
+            // ok lazy check here, check if star-filter-container is in 
+            // review-add-top, if so- just have it set the stars value
+            filteredStars = index+1;
+            if (parentElement.id === 'review-add-top') {
+              container.dataset.rating = filteredStars;
+            } else {
+
+              if (reviewRightCont.firstChild) {
+                reviewRightCont.removeChild(reviewRightCont.firstChild);
+              }
+              reviewsContainer.innerHTML = '';
+              addReviews(filteredStars, reviewsContainer, data);
+              reviewRightCont.append(reviewsContainer);
+            }
+          });
+          
+          container.addEventListener('mouseleave', () => {
+            for (let i = 0; i < filteredStars; i++) {
+              stars[i].textContent = '★';
+            }
+            for (let i = index; i > 5; i++) {
+              stars[i].textContent = '☆';
+            }
+          });
+        });
+      });
     });
+
+    
     
 
   // Add the data to the propety page
   // Style the propety page in CSS
   // Add a review component at the bottom of the property page (maybe to the side too + a few highlights..)
-  propertyPageContainer.append(propertyPage);
-  document.body.append(propertyPageContainer);
+
+  
 
   setTimeout(function() {
     var prevButton = document.querySelector(".prev");
@@ -601,8 +803,21 @@ function openPropertyPage(id) {
       plusSlides(1);
     });
     showSlides(slideIndex);
-  }, 400); // Delay of 1000 milliseconds (1 second)
 
+    var reviewContainers = document.querySelectorAll('.property-review');
+    reviewContainers.forEach(function(container) {
+      // Check if post contents overflows, if so apply overflow tag
+      if (container.scrollHeight > container.clientHeight) {
+        container.classList.add('has-overflow');
+      }
+
+      // Add click handlers to remove/add overflow tags
+      container.addEventListener('click', function() {
+        if (container.classList.contains('has-overflow'))
+          container.classList.remove('has-overflow');
+    }); 
+    });
+  }, 400); // Delay of 1000 milliseconds (1 second)
   }
 
 function initializeMap() {
