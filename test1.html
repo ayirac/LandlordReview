@@ -1,0 +1,215 @@
+<html>
+  <head>
+    <style>
+      body {
+        color: black;
+      }
+
+      #review-add-container {
+        width: 100%;
+        height: 70vh;
+        display: flex;
+      }
+
+      #review-add-text-container {
+        width: 100%;
+        background-color: green;
+      }
+
+      #review-add-left {
+        flex-basis: 60%;
+        padding: 0px 5px 5px 5px;
+      }
+
+      #review-add-right {
+        flex-basis: 40%;
+        padding: 0px 5px 5px 5px;
+      }
+
+      #review-add-tag-container {
+        background-color: red;
+        width: 100%;
+        height: 70%;
+        align-content: center;
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+      }
+
+     
+
+
+
+      #review-add-submit {
+        margin-top: 10px;
+        width: 10%;
+        height: 10%;
+      }
+
+      #review-add-text {
+        height: calc(100% - 16px);
+        width: 100%;
+      }
+
+      #tag-add-text {
+        padding: 5px 5px 5px 5px;
+        width: 98%;
+        align-self: center;
+      }
+
+      #property-tags {
+        margin: 0;
+        padding: 10px;
+        width: 100%;
+        height: 100%;
+        display: inline-flex;
+        align-content: flex-start;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+    #review-add-detail-wrapper {
+        background-color: blue;
+    }
+
+    #review-add-detail-container {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        padding-top: 10px;
+        box-sizing: border-box;
+    }
+
+    .input-container {
+        display: flex;
+        align-items: center;
+        padding: 0px 10px 10px 15px;
+        width: 50%;
+        box-sizing: border-box;
+    }
+
+    .input-title {
+        font-weight: bold;
+        margin-right: 10px;
+        width: 100px; /* Adjust the width as desired */
+    }
+
+    .input-field {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+        max-width: 160px;
+    }
+
+    #header-det {
+        margin: 0;
+        font-weight: bold;
+        padding: 5px 5px 5px 5px;
+    }
+
+    #review-add-detail-title{
+        margin: 5px 0px 5px 5px;
+        font-weight: bold;
+        width: 40%;
+    }
+
+    .tag-container {
+            margin: 5px 5px 5px 5px;
+            padding: 5px 5px 5px 5px;
+            background-color: #f9f4f4;
+            border: 2px solid #c4c4c4;
+            border-radius: 12px;
+            display: flex;
+            }
+
+
+    </style>
+  </head>
+  <body>
+    <div id="review-add-container">
+      <div id="review-add-left">
+        <div id="review-add-text-container">
+            <input id="review-add-detail-title" placeholder="Title..."></input>
+          <textarea id="review-add-text" placeholder="Type your review here..."></textarea>
+        </div>
+        <button id="review-add-submit">Submit</button>
+      </div>
+      <div id="review-add-right">
+        <div id="review-add-tag-container">
+            <p id="header-det">Property Tags</p>
+            <input id="tag-add-text" placeholder="Type tags here..." />
+            <div id="property-tags"></div>
+        </div>
+        <div id="review-add-detail-wrapper">
+            <div id="review-add-detail-title">
+                <p id="header-det">Optional Property Information</p>
+              </div>
+            <div id="review-add-detail-container">
+                <div class="input-container">
+                  <label for="bedrooms-input" class="input-title">Bedrooms</label>
+                  <input type="text" id="bedrooms-input" class="input-field" placeholder="n/a"/>
+                </div>
+                <div class="input-container">
+                  <label for="bathrooms-input" class="input-title">Bathrooms</label>
+                  <input type="text" id="bathrooms-input" class="input-field" placeholder="n/a"/>
+                </div>
+                <div class="input-container">
+                  <label for="name-input" class="input-title">Name</label>
+                  <input type="text" id="name-input" class="input-field" placeholder="n/a"/>
+                </div>
+                <div class="input-container">
+                  <label for="address-input" class="input-title">Address</label>
+                  <input type="text" id="address-input" class="input-field" placeholder="n/a"/>
+                </div>
+                <div class="input-container">
+                  <label for="monthly-rent-input" class="input-title">Monthly Rent</label>
+                  <input type="text" id="monthly-rent-input" class="input-field" placeholder="n/a"/>
+                </div>
+                <div class="input-container">
+                  <label for="security-deposit-input" class="input-title">Security Deposit</label>
+                  <input type="text" id="security-deposit-input" class="input-field" placeholder="n/a"/>
+                </div>
+                <div class="input-container">
+                  <label for="term-input" class="input-title">Term</label>
+                  <input type="text" id="term-input" class="input-field" placeholder="n/a"/>
+                </div>
+              </div>
+        </div>
+        
+      </div>
+    </div>
+  </body>
+</html>
+
+<script>
+  const textarea = document.getElementById('tag-add-text');
+  const tagContainer = document.getElementById('property-tags');
+  const addedTags = new Set();
+
+  data = { Tags: ['HOA', 'Garage'] };
+
+  textarea.addEventListener('keyup', function (event) {
+    if (event.key === 'Enter' || event.key === ',') {
+      const tagsArray = textarea.value.split(/,|\n/).map(tag => tag.trim()).filter(tag => tag !== '');
+      const tag = tagsArray.length > 0 ? tagsArray[0] : '';
+      textarea.value = '';
+
+      // Check if user input exists in tag array, if so add it as a tag
+      for (let i = 0; i < data.Tags.length; i++) {
+        let lowerCheckTag = data.Tags[i].toLowerCase();
+        if (tag.toLowerCase() === lowerCheckTag) {
+          if (!addedTags.has(tag)) {
+            const tagDiv = document.createElement('div');
+            tagDiv.className = 'tag-container';
+            tagDiv.textContent = data.Tags[i];
+            tagContainer.appendChild(tagDiv);
+            addedTags.add(tag);
+          }
+          break;
+        }
+      }
+    }
+  });
+</script>
