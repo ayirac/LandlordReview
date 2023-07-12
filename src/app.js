@@ -202,6 +202,29 @@ const server = http.createServer((req, res) => {
       res.end(content);
       });
   } 
+  else if (parsedUrl.pathname === '/submit-review') {
+    if (req.method === 'POST') {
+      let formData = '';
+  
+      req.on('data', (chunk) => {
+        formData += chunk;
+      });
+  
+      req.on('end', () => {
+        // Here, you can access the complete form data
+        console.log(formData);
+  
+        // You can parse the form data, for example, if it's in URL-encoded format
+        const parsedFormData = new URLSearchParams(formData);
+        console.log(parsedFormData.get('title'));
+  
+        // Send a response to the client
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'text/plain');
+        res.end('Received the form data');
+      });
+    }
+  }
   else {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/plain');

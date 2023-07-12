@@ -798,7 +798,7 @@ input[type=range]:focus {
 }
 
 .slideshow {
-  padding: 10px 10px 0px 10px;
+  box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.2);
   flex-basis: 75%;
 }
 
@@ -830,7 +830,7 @@ input[type=range]:focus {
 }
 
 
-.tag-container {
+#tag-container {
   margin: 0px 5px 10px 6px;
   padding: 5px 5px 5px 5px;
   background-color: #f9f4f4;
@@ -1134,7 +1134,6 @@ input[type=range]:focus {
 #review-add-detail-title{
   margin: 0px 10px 5px 0px;
   font-weight: bold;
-  width: 30%;
 }
 
 #review-add-top .star-filter-container {
@@ -1146,7 +1145,7 @@ input[type=range]:focus {
 margin: 5px 5px 5px 5px;
 padding: 5px 5px 5px 5px;
 background-color: #f9f4f4;
-border: 1 px solid #c4c4c4;
+border: 1px solid #c4c4c4;
 border-radius: 12px;
 display: flex;
 }
