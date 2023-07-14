@@ -38,72 +38,153 @@ function addReviews(thresh, reviewsContainer, data) {
     var reviewData = data.Reviews[i];
     var reviewWrap = document.createElement('div');
     reviewWrap.classList.add('property-review');
-  
-
-    var reviewName = document.createElement('p');
-    reviewName.className = 'property-review-name';
-    reviewName.innerText = reviewData.ReviewerName;
-    reviewWrap.append(reviewName);
 
     // Show Name, title, review, and the text
     // Name - Title - 4/5 Stars
-    var reviewStarRatingWrapper = document.createElement('div');
-    reviewStarRatingWrapper.className = 'property-star-rating-wrapper';
+    var reviewVLeft = document.createElement('div');
+    reviewVLeft.className = 'rev-v-left';
+
+    var reviewVRight = document.createElement('div');
+    reviewVRight.className = 'rev-v-right';
+    
+    var reviewName = document.createElement('p');
+    reviewName.className = 'property-review-name';
+    reviewName.innerText = reviewData.ReviewerName;
+    reviewVLeft.append(reviewName);
+
     var reviewTop = getReviewStarContainer(data.Reviews[i], false);
     reviewTop.className = 'property-review-top';
-
+    
     var reviewTitle = document.createElement('span');
     reviewTitle.className = 'property-review-title';
     reviewTitle.innerText = reviewData.Title;
-
+    
     reviewTop.append(reviewTitle);
-    reviewStarRatingWrapper.append(reviewTop);
-    reviewWrap.append(reviewStarRatingWrapper);
+    reviewVLeft.append(reviewTop);
+    
+    // Create a container div
+    const container = document.createElement('div');
+    const contTitle = document.createElement('p');
+    contTitle.id = 'header-det';
+    contTitle.textContent = 'Reported Details';
+    container.append(contTitle);
+    
+    // Create a table element
+    const table = document.createElement('table');
+    table.style.borderCollapse = 'collapse';
+    
+    // Function to create a table row with two cells
+    const createTableRowWithTwoCells = (label1, value1, label2, value2) => {
+      const row = document.createElement('tr');
+    
+      const labelCell1 = document.createElement('td');
+      labelCell1.textContent = label1;
+    
+      const valueCell1 = document.createElement('td');
+      valueCell1.textContent = value1;
+    
+      const labelCell2 = document.createElement('td');
+      labelCell2.textContent = label2;
+    
+      const valueCell2 = document.createElement('td');
+      valueCell2.textContent = value2;
+    
+      row.appendChild(labelCell1);
+      row.appendChild(valueCell1);
+      row.appendChild(labelCell2);
+      row.appendChild(valueCell2);
+    
+      return row;
+    };
+    
+    let bedrooms = reviewData.Bedrooms === null || reviewData.Bedrooms === -1 ? 'N/A' : reviewData.Bedrooms;
+    let bathrooms = reviewData.Bathrooms === null || reviewData.Bathrooms === -1 ? 'N/A' : reviewData.Bathrooms;
+    let rent = reviewData.Rent === null || reviewData.Rent === "-1.00" ? 'N/A' : reviewData.Rent;
+    let deposit = reviewData.Deposit === null || reviewData.Deposit === "-1.00" ? 'N/A' : reviewData.Deposit;
+    let term = reviewData.Term === null ? 'N/A' : reviewData.Term;
+    let tags = reviewData.Tags === null ? 'N/A' : reviewData.Tags;
+  
+    table.appendChild(createTableRowWithTwoCells('Bedrooms:', bedrooms, 'Rent:', rent));
+    table.appendChild(createTableRowWithTwoCells('Bathrooms:', bathrooms, 'Deposit:', deposit));
+    
+    // Append the table to the container div
+    container.appendChild(table);
+    reviewVRight.append(container);
+    
+    // Tags section
+    // Create the tag container
+    const reviewAddTagContainer = document.createElement('div');
+    reviewAddTagContainer.id = 'review-view-tag-container';
+    
+    // Create the header for property tags
+    const headerDet = document.createElement('p');
+    headerDet.id = 'header-det';
+    headerDet.textContent = '';
+    reviewAddTagContainer.appendChild(headerDet);
+    
+    // Create the div for property tags
+    const propertyTags = document.createElement('div');
+    propertyTags.className = 'property-tags';
+
+   // Create the tag container divs
+  tags.split(',').forEach(tag => {
+    const tagContainer = document.createElement('div');
+    tagContainer.className = 'tag-container';
+    tagContainer.textContent = tag.trim(); // Trim any leading/trailing whitespace
+    propertyTags.appendChild(tagContainer);
+  });
+
+
+    reviewAddTagContainer.appendChild(propertyTags);
+
 
     var reviewDate = document.createElement('p');
     reviewDate.className = 'property-review-date';
-    reviewDate.innerText = "Reviewed on July 5, 2023";
-    reviewWrap.append(reviewDate);
-
+    const date = new Date(reviewData.Date);
+    const options = { month: 'long', day: 'numeric', year: 'numeric' };
+    const formattedDate = date.toLocaleDateString('en-US', options);
+    const finDate = "Reviewed on " + formattedDate;
+    reviewDate.innerText = finDate; 
+    reviewVLeft.append(reviewDate);
+    
+    var majorTopCont = document.createElement('div');
+    majorTopCont.className = 'review-maj-top';
+    
+    majorTopCont.append(reviewVLeft);
+    majorTopCont.append(reviewVRight);
+    majorTopCont.appendChild(reviewAddTagContainer);
+   
+    reviewWrap.append(majorTopCont);
+    
     // Text
     var reviewText = document.createElement('p');
     reviewText.className = 'property-review-text';
     reviewText.innerText = reviewData.Text;
     reviewWrap.append(reviewText);
-
+    
     reviewsContainer.append(reviewWrap);
-  }
-
-  // if not atleast one review, add a special message
-  if (!atleastOneReview) {
-    var noReviewsFoundTxt = document.createElement('h3');
-    noReviewsFoundTxt.innerText = 'No reviews found... try messing with the filters on the left';
-    reviewsContainer.append(noReviewsFoundTxt);
-  }
-}
-
-function generateHTMLData(data) {
-  const div = document.createElement('div');
-  div.className = 'review-star-filter-container';
-
-  // need to go through data.Reviews & calculate the % for each star, cont
-  // best way of doing this, array 0-4 and for each review array[review.toInt()]++
-  // at end of loop, for each level set percentage to array[i]/reviews.length
-  // tada!
-  const starVotes = [0, 0, 0, 0, 0];
+    }
+    
+    // if not at least one review, add a special message
+    if (!atleastOneReview) {
+      var noReviewsFoundTxt = document.createElement('h3');
+      noReviewsFoundTxt.innerText = 'No reviews found... try messing with the filters on the left';
+      reviewsContainer.append(noReviewsFoundTxt);
+    }
+    }
+    
+    function generateHTMLData(data) {
+      const div = document.createElement('div');
+      div.className = 'review-star-filter-container';
+    
+      // need to go through data.Reviews & calculate the % for each star, cont
+      // best way of doing this, array 0-4 and for each review array[review.toInt()]++
+      // at end of loop, for each level set percentage to array[i]/reviews.length
+      // tada!
+      const starVotes = [0, 0, 0, 0, 0];
   data.Reviews.forEach(function(review) {
     starVotes[Math.ceil(parseFloat(review.Rating)-1)]++;
   });
-  /*
-  console.log(starVotes);
-  console.log(starVotes[0]/data.Reviews.length);
-  console.log(starVotes[1]/data.Reviews.length);
-  console.log(starVotes[2]/data.Reviews.length);
-  console.log(starVotes[3]/data.Reviews.length);
-  console.log(starVotes[4]/data.Reviews.length);
-
-  console.log(`${Math.round((starVotes[0]/data.Reviews.length) * 100)}%`);
-*/
   const progressBarWrappers = [
       { star: '5 Star', width: `${Math.round((starVotes[4]/data.Reviews.length) * 100)}%` },
       { star: '4 Star', width: `${Math.round((starVotes[3]/data.Reviews.length) * 100)}%` },
@@ -257,6 +338,11 @@ function createPropertyAddComponent() {
   reviewAddContainer.id = 'review-add-container';
   reviewAddContainer.action = '/submit-review'
   reviewAddContainer.method = 'post';
+  reviewAddContainer.enctype = "multipart/form-data";
+
+  // Main container inner wrapper
+  const reviewAddWrap = document.createElement('div');
+  reviewAddWrap.id = 'review-add-wrap';
 
   // Create the left section
   const reviewAddLeft = document.createElement('div');
@@ -273,13 +359,36 @@ function createPropertyAddComponent() {
 
   const reviewAddStarContainer = getReviewStarFilterContainer();
   reviewAddStarContainer.id = 'review-rating-select';
+  reviewAddStarContainer.className = 'star-filter-container';
   reviewAddStarContainer.dataset.rating = '';
+
   // Create the input for the detail title
-  const reviewAddDetailTitle = document.createElement('input');
+  const reviewAddTitleWrapper = document.createElement('div');
+  reviewAddTitleWrapper.className = 'review-add-top-wrapper';
+
+  const reviewAddTitleLabel = document.createElement('h4'); // Label
+  reviewAddTitleLabel.textContent = 'Title*:';
+  reviewAddTitleWrapper.append(reviewAddTitleLabel);
+
+  const reviewAddDetailTitle = document.createElement('input'); // input
   reviewAddDetailTitle.id = 'review-add-detail-title';
   reviewAddDetailTitle.placeholder = 'Title...';
   reviewAddDetailTitle.name = 'title';
-  reviewAddTextContainer.appendChild(reviewAddDetailTitle);
+  reviewAddTitleWrapper.appendChild(reviewAddDetailTitle);
+
+  // Create the input for the reviewers name
+  const reviewAddRevNameWrapper = document.createElement('div');
+  reviewAddRevNameWrapper.className = 'review-add-top-wrapper';
+
+  const reviewAddRevNameLabel = document.createElement('h4'); // Label
+  reviewAddRevNameLabel.textContent = 'Your Name:';
+  reviewAddRevNameWrapper.appendChild(reviewAddRevNameLabel);
+
+  const reviewAddDetailReviewerName = document.createElement('input');
+  reviewAddDetailReviewerName.id = 'review-add-detail-reviewer-name';
+  reviewAddDetailReviewerName.placeholder = 'Anonymous';
+  reviewAddDetailReviewerName.name = 'reviewer-name';
+  reviewAddRevNameWrapper.appendChild(reviewAddDetailReviewerName);
 
   const hiddenRating = document.createElement('input');
   hiddenRating.type = 'hidden';
@@ -291,10 +400,23 @@ function createPropertyAddComponent() {
   hiddenTags.id = 'hidden-tags';
   hiddenTags.name = 'tags'
 
-  reviewAddTop.append(reviewAddDetailTitle);
+  const hiddenDropInput = document.createElement('input');
+  hiddenDropInput.type = 'hidden';
+  hiddenDropInput.id = 'hidden-term';
+  hiddenDropInput.name = 'term'
+
+  const hiddenPropID = document.createElement('input');
+  hiddenPropID.type = 'hidden';
+  hiddenPropID.id = 'hidden-prop-id';
+  hiddenPropID.name = 'prop-id'
+
+  reviewAddTop.append(reviewAddTitleWrapper);
+  reviewAddTop.append(reviewAddRevNameWrapper);
   reviewAddTop.append(reviewAddStarContainer);
   reviewAddTop.append(hiddenRating);
   reviewAddTop.append(hiddenTags);
+  reviewAddTop.append(hiddenDropInput);
+  reviewAddTop.append(hiddenPropID);
   reviewAddTextContainer.append(reviewAddTop);
 
   // HERE
@@ -310,15 +432,8 @@ function createPropertyAddComponent() {
   // Append the text container to the left section
   reviewAddLeft.appendChild(reviewAddTextContainer);
 
-  // Create the submit button
-  const reviewAddSubmit = document.createElement('input');
-  reviewAddSubmit.id = 'review-add-submit';
-  reviewAddSubmit.type = 'submit';
-  reviewAddSubmit.value = 'Submit';
-  reviewAddLeft.appendChild(reviewAddSubmit);
-
   // Append the left section to the main container
-  reviewAddContainer.appendChild(reviewAddLeft);
+  reviewAddWrap.appendChild(reviewAddLeft);
 
   // Create the right section
   const reviewAddRight = document.createElement('div');
@@ -342,7 +457,8 @@ function createPropertyAddComponent() {
 
   // Create the div for property tags
   const propertyTags = document.createElement('div');
-  propertyTags.id = 'property-tags';
+  propertyTags.className = 'property-tags';
+  propertyTags.id = 'property-add-tags';
   reviewAddTagContainer.appendChild(propertyTags);
 
   // Append the tag container to the right section
@@ -369,15 +485,13 @@ function createPropertyAddComponent() {
   const reviewAddDetailContainer = document.createElement('div');
   reviewAddDetailContainer.id = 'review-add-detail-container';
 
-  // Create the input containers for different property details
+  // Create the input containers for different property details, basically just storing until later used
   const propertyDetails = [
-    { label: 'Bedrooms', id: 'bedrooms-input', placeholder: 'n/a' },
-    { label: 'Bathrooms', id: 'bathrooms-input', placeholder: 'n/a' },
-    { label: 'Name', id: 'name-input', placeholder: 'n/a' },
-    { label: 'Address', id: 'address-input', placeholder: 'n/a' },
-    { label: 'Monthly Rent', id: 'monthly-rent-input', placeholder: 'n/a' },
+    { label: 'Bedrooms', id: 'bedrooms-input', placeholder: 'n/a' }, // cap 10
+    { label: 'Bathrooms', id: 'bathrooms-input', placeholder: 'n/a' }, // cap 10
+    { label: 'Monthly Rent', id: 'monthly-rent-input', placeholder: 'n/a' }, // 4000 
     { label: 'Security Deposit', id: 'security-deposit-input', placeholder: 'n/a' },
-    { label: 'Term', id: 'term-input', placeholder: 'n/a' },
+    { label: 'Lease Term', id: 'term-input', placeholder: 'n/a' } // select from Monthly, 3 month, 6 month, yearly
   ];
 
   propertyDetails.forEach(detail => {
@@ -389,13 +503,86 @@ function createPropertyAddComponent() {
     label.textContent = detail.label;
     inputContainer.appendChild(label);
 
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.name = detail.id;
-    input.id = detail.id;
-    input.className = 'input-field';
-    input.placeholder = detail.placeholder;
-    inputContainer.appendChild(input);
+    if (detail.id === 'term-input') {
+      // create dropdown for selecting terms
+      // Create the dropdown container
+      const dropdownContainer = document.createElement('div');
+      dropdownContainer.classList.add('dropdown');
+      dropdownContainer.id = 'dropdown-term';
+      //dropdownContainer.style.width = '165px'
+
+      // Create the dropdown button
+      const dropdownButton = document.createElement('button');
+      dropdownButton.id = 'review-add-term-dropdown';
+      dropdownButton.className = 'dropbtn';
+
+      var spanElement = document.createElement('span');
+      spanElement.className = 'button-text';
+      spanElement.textContent = 'N/A';
+
+      dropdownButton.append(spanElement);
+
+      // Create the dropdown icon
+      const dropdownIcon = document.createElement('i');
+      dropdownIcon.classList.add('fas', 'fa-chevron-down');
+      dropdownButton.appendChild(dropdownIcon);
+
+      // Append the dropdown button to the container
+      dropdownContainer.appendChild(dropdownButton);
+
+      // Create the dropdown content
+      const dropdownContent = document.createElement('div');
+      dropdownContent.classList.add('dropdown-content');
+      dropdownContent.id = 'review-term-dropdown'
+
+      // Create the dropdown links
+      const defaultLink = document.createElement('a');
+      defaultLink.href = '#';
+      defaultLink.id = 'default';
+      defaultLink.textContent = 'N/A';
+
+      const monthlyLink = document.createElement('a');
+      monthlyLink.href = '#';
+      monthlyLink.id = 'monthly';
+      monthlyLink.textContent = 'Month to Month';
+
+      const threeMonthLink = document.createElement('a');
+      threeMonthLink.href = '#';
+      threeMonthLink.id = 'three-month';
+      threeMonthLink.textContent = '3 Months';
+
+      const sixMonthLink = document.createElement('a');
+      sixMonthLink.href = '#';
+      sixMonthLink.id = 'six-month';
+      sixMonthLink.textContent = '6 Months';
+
+      const yearlyLink = document.createElement('a');
+      yearlyLink.href = '#';
+      yearlyLink.id = 'yearly';
+      yearlyLink.textContent = 'Yearly';
+
+      // Append the dropdown links to the dropdown content
+      dropdownContent.appendChild(defaultLink);
+      dropdownContent.appendChild(monthlyLink);
+      dropdownContent.appendChild(threeMonthLink);
+      dropdownContent.appendChild(sixMonthLink);
+      dropdownContent.appendChild(yearlyLink);
+
+      // Append the dropdown content to the container
+      dropdownContainer.appendChild(dropdownContent);
+
+      // Append the dropdown container to the document body
+      inputContainer.appendChild(dropdownContainer);
+
+    } else {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.name = detail.id;
+      input.id = detail.id;
+      input.className = 'input-field';
+      input.placeholder = detail.placeholder;
+      inputContainer.appendChild(input);
+    }
 
     reviewAddDetailContainer.appendChild(inputContainer);
   });
@@ -407,7 +594,15 @@ function createPropertyAddComponent() {
   reviewAddRight.appendChild(reviewAddDetailWrapper);
 
   // Append the right section to the main container
-  reviewAddContainer.appendChild(reviewAddRight);
+  reviewAddWrap.appendChild(reviewAddRight);
+  reviewAddContainer.appendChild(reviewAddWrap);
+
+  // Create the submit button
+  const reviewAddSubmit = document.createElement('input');
+  reviewAddSubmit.id = 'review-add-submit';
+  reviewAddSubmit.type = 'submit';
+  reviewAddSubmit.value = 'Submit';
+  reviewAddContainer.appendChild(reviewAddSubmit);
 
   reviewAddWrapper.append(reviewAddContainer);
   return reviewAddWrapper;
@@ -753,11 +948,14 @@ function openPropertyPage(id) {
       // HANDLERS
       // Submit button handler for custom data insert
       const reviewAddForm = document.getElementById('review-add-container');
-      const tagsContainer = document.getElementById('property-tags');
+      const reviewAddSub = document.getElementById('review-add-submit');
+      const reviewAddDrop = document.getElementById('review-add-term-dropdown');
+      const reviewAddDropdown = document.getElementById('review-term-dropdown');
+      const tagsContainer = document.getElementById('property-add-tags');
       const inputHiddenTag = document.getElementById('hidden-tags');
-      const inputHiddenRating = document.getElementById('hidden-rating');
-      const ratingSelect = document.getElementById('review-rating-select');
-      
+      const inputHiddenDrop = document.getElementById('hidden-term');
+      const inputHiddenPropID = document.getElementById('hidden-prop-id');
+
       // Calculate or gather additional data before form submission
       // For example, getting tags from a div with an ID "tagsContainer"
       //const tags = Array.from(tagsInput.getElementsByClassName('tag-container')).map(tag => tag.textContent);
@@ -765,54 +963,149 @@ function openPropertyPage(id) {
 
       reviewAddForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        // Getting the selected rating from a select input with an ID "ratingSelect"
-        console.log('k');
-        console.log(ratingSelect);
-        inputHiddenRating.value = ratingSelect.dataset.rating;
-        const tagsArray = Array.from(tagsContainer.children).map(child => child.textContent.trim());
         
+      });
+
+      reviewAddDrop.addEventListener('click', (event) => {
+        toggleBox(reviewAddDropdown);
+      });
+
+      // Add listener to each dropdown item
+      var dropdownItem = document.querySelectorAll('#review-term-dropdown a');
+      dropdownItem.forEach(function(item) {
+        item.addEventListener('click', function(event) {
+          var clickedItem = event.target;
+          var itemId = clickedItem.id;
+          reviewAddDrop.innerHTML = clickedItem.innerHTML;
+          reviewAddDropdown.style.display = 'none';
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        if (reviewAddDropdown.style.display === 'none' && !reviewAddDrop.contains(event.target) && !reviewAddDropdown.contains(event.target)) {
+          toggleBox(reviewAddDropdown);
+        }
+      });
+
+      reviewAddSub.addEventListener('click', (event) => {
+        event.preventDefault();
+    
+        const tagsArray = Array.from(tagsContainer.children).map(child => child.textContent.trim());
+      
         // Getting the tags the user has selected
         const joinedTags = tagsArray.join(',');
         inputHiddenTag.value = joinedTags;
-
+        inputHiddenDrop.value = document.getElementById('review-add-term-dropdown').innerText;
+      
+        const urlParams = new URLSearchParams(window.location.search);
+        const propertyId = urlParams.get('id');
+        inputHiddenPropID.value = propertyId;
+      
         // Check if required elements are there such as: Title, Text, ReviewStars
         const reviewTitle = document.getElementById('review-add-detail-title');
-        const reviewText = document.getElementById('review-add-text');
-        const reviewAddr = document.getElementById('address-input');
+        const reviewText = document.getElementById('review-add-text');     
+        const reviewBed = document.getElementById('bedrooms-input');
+        const reviewBath = document.getElementById('bathrooms-input');
+        const reviewRent = document.getElementById('monthly-rent-input');
+        const reviewDep = document.getElementById('security-deposit-input');
+        const reviewTerm = document.getElementById('review-add-term-dropdown');
+        const ratingSelect = document.getElementById('review-rating-select');
+        const reviewName = document.getElementById('review-add-detail-reviewer-name');
+
         let errors = '';
         let errorDetected = false;
+
         if (reviewTitle.value === '') {
-          errors += 'Missing title.\n'
-          errorDetected = true;
-        }
-        if (reviewText.value === '') {
-          errors += 'Missing review body.\n'
-          errorDetected = true;
-        }
-        console.log(inputHiddenRating.length);
-        if (inputHiddenRating.value === '') {
-          errors += 'Missing star rating.\n'
-          errorDetected = true;
-        }
-        if (reviewAddr.value === '') {
-          errors += 'Missing address.\n'
+          errors += 'Missing title.\n';
           errorDetected = true;
         }
 
-        if (errorDetected)
+        if (reviewText.value === '') {
+          errors += 'Missing review body.\n';
+          errorDetected = true;
+        }
+
+        if (ratingSelect.dataset.rating === '') {
+          errors += 'Missing star rating.\n';
+          errorDetected = true;
+        }
+
+        if (reviewBed.value !== '' && (isNaN(reviewBed.value) || reviewBed.value < 1 || reviewBed.value > 20)) {
+          errors += 'Invalid number of bedrooms. Please enter a number between 1 and 20.\n';
+          errorDetected = true;
+        }
+
+        if (reviewBath.value !== '' && (isNaN(reviewBath.value) || reviewBath.value < 1 || reviewBath.value > 20)) {
+          errors += 'Invalid number of bathrooms. Please enter a number between 1 and 20.\n';
+          errorDetected = true;
+        }
+
+        if (reviewRent.value !== '' && (isNaN(reviewRent.value) || reviewRent.value < 0 || reviewRent.value > 20000)) {
+          errors += 'Invalid monthly rent. Please enter a number between 0 and 20000.\n';
+          errorDetected = true;
+        }
+
+        if (reviewDep.value !== '' && (isNaN(reviewDep.value) || reviewDep.value < 0 || reviewDep.value > 20000)) {
+          errors += 'Invalid security deposit. Please enter a number between 0 and 20000.\n';
+          errorDetected = true;
+        }
+
+        if (reviewName.value === '') {
+          errors += 'Missing reviewer name.\n';
+          errorDetected = true;
+        }
+
+        if (errorDetected) {
           alert(errors);
-        else
-          reviewAddForm.submit();
+        } else {
+          // Create a new XMLHttpRequest object
+          const xhr = new XMLHttpRequest();
+      
+          // Configure the request
+          xhr.open('POST', reviewAddForm.action, true);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.onload = function() {
+            if (xhr.status === 200) {
+              // Handle a successful response from the server
+              // Here you can update the page content dynamically
+              // without refreshing the entire page
+              setTimeout(function() {
+                window.location.reload();
+              }, 1000);
+            } else {
+              // Handle an error response from the server
+              console.error('Form submission failed. Status: ' + xhr.status);
+            }
+          };
+
+          // Create the JSON data object
+          const jsonData = {
+            title: reviewTitle.value,
+            name: reviewName.value,
+            rating: ratingSelect.dataset.rating,
+            text: reviewText.value,
+            tags: joinedTags,
+            bedrooms: reviewBed.value,
+            bathrooms: reviewBath.value,
+            rent: reviewRent.value,
+            deposit: reviewDep.value,
+            term: inputHiddenDrop.value,
+            propid: inputHiddenPropID.value,
+          };
+      
+          // Send the JSON data
+          xhr.send(JSON.stringify(jsonData));
+        }
       });
+      
       // Property review tag auto correct element
       const textarea = document.getElementById('tag-add-text');
-      const tagContainer = document.getElementById('property-tags');
+      const tagContainer = document.getElementById('property-add-tags');
       const addedTags = new Set();
 
       var tempTagdata = { Tags: ['HOA', 'Garage'] };
 
       textarea.addEventListener('keyup', function (event) {
-        console.log('k');
         if (event.key === 'Enter' || event.key === ',') {
           const tagsArray = textarea.value.split(/,|\n/).map(tag => tag.trim()).filter(tag => tag !== '');
           const tag = tagsArray.length > 0 ? tagsArray[0] : '';
@@ -824,7 +1117,7 @@ function openPropertyPage(id) {
             if (tag.toLowerCase() === lowerCheckTag) {
               if (!addedTags.has(tag)) {
                 const tagDiv = document.createElement('div');
-                tagDiv.id = 'tag-container';
+                tagDiv.classList.add('tag-container');
                 tagDiv.textContent = tempTagdata.Tags[i];
                 tagContainer.appendChild(tagDiv);
                 addedTags.add(tag);
@@ -869,7 +1162,6 @@ function openPropertyPage(id) {
           });
           
           container.addEventListener('mouseleave', () => {
-            console.log(filteredStars);
             for (let i = 0; i < filteredStars; i++) {
               stars[i].textContent = '★';
             }
@@ -891,8 +1183,8 @@ function openPropertyPage(id) {
   
 
   setTimeout(function() {
-    var prevButton = document.querySelector(".prev");
-    var nextButton = document.querySelector(".next");;
+    var prevButton = document.querySelector(".prev"); // this doesnt work all the time, increase timeout or find way to load on demand when pics r done
+    var nextButton = document.querySelector(".next");
   
     // Add event listeners to the buttons
     prevButton.addEventListener("click", function() {

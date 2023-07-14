@@ -1,9 +1,13 @@
 {
   "dependencies": {
+    "formidable": "^3.5.0",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "mysql": "^2.18.1",
-    "query-string": "^8.1.0"
+    "mysql2": "^3.5.1",
+    "query-string": "^8.1.0",
+    "querystring": "^0.2.1",
+    "xss": "^1.0.14"
   },
   "name": "landlordreview",
   "version": "1.0.0",
