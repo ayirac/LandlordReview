@@ -62,6 +62,92 @@ function getContentType(filePath) {
   }
 }
 
+async function calculatePropertyTags(propID) {
+
+  try {
+    // Query propFullTags & sort in descending order
+    const selectFullTagsQ = 'SELECT * FROM PropFullTags WHERE PropID = ? ORDER BY Count DESC;'  
+    var propFullTags = await executeQuery(selectFullTagsQ, [
+      propID,
+    ]);
+
+    // Query currentPropTags
+    const currentTagsQ = 'SELECT * FROM PropertyTags WHERE PropertyID = ?';
+    var propCurrentTags = await executeQuery(currentTagsQ, [
+      propID,
+    ]);
+
+    var passedTags = [];
+    const thresh = [1, 2, 5, 10, 20, 50];
+    const tagsToTake = 3; 
+    var tagsTaken = 0, curThresh = 0;
+    // Filter out propFullTags into passedTags
+    for (let i = 0; i < propFullTags.length; i++) {
+      let tag = propFullTags[i];
+      console.log(tag.TagID + ": " + tag.Count);
+      console.log("thresh: " + curThresh);
+      if (tag.Count >= thresh[curThresh]) {
+        console.log(tag.TagID + ' and the count: ' + tag.Count);
+        passedTags.push(tag);
+        console.log(tag + ' has passed');
+        tagsTaken++;
+        if (tagsTaken+1 > tagsToTake) {  // Increment thresh if tagsTaken goes past its boundary, moving to next thresh level
+          if (curThresh+1 < thresh.length) {
+            curThresh++;
+          }
+          tagsTaken = 0;
+        }
+      } else {
+        break;
+      }
+    }
+
+    // Itr over passedtags and add missing passedTags from currentTags to addTags array
+    const addTags = passedTags.filter((pTag) => { // PROBLEM HERE, FIX THIS!!!
+      console.log(propCurrentTags);
+      const pTagExists = propCurrentTags.some((cTag) => cTag.TagID === pTag.TagID);
+      console.log('check: ' + pTag.TagID);
+      if (pTagExists) {
+        console.log('not adding: ' + pTag.TagID);
+        return false;
+      } else {
+        console.log('adding: ' + pTag.TagID);
+        return true;
+      }
+    });
+
+    // Itr over currentTags and remove missing passedTags from currentTags to removeTags array
+    const deleteTags = propCurrentTags.filter((cTag) => {
+      const cTagExists = passedTags.some((pTag) => cTag.TagID === pTag.TagID);
+      if (!cTagExists) {
+        console.log('delete: ' + cTag.TagID);
+        return true;
+      }
+    });
+
+    // Insert the addTags into the currentPropTags table
+    for (const tag of addTags) {
+      const checkQuery = 'SELECT COUNT(*) as count FROM PropertyTags WHERE PropertyID = ? AND TagID = ?';
+      const [result] = await executeQuery(checkQuery, [propID, tag.TagID]);
+      const count = result.count;
+      if (count === 0) {
+        const insertTagQ = 'INSERT INTO PropertyTags (PropertyID, TagID) VALUES (?, ?);';
+        await executeQuery(insertTagQ, [propID, tag.TagID]);
+        console.log('Value inserted successfully.');
+      }
+    }
+
+    // Delete the deleteTags from the currentPropTags table
+    for (const tag of deleteTags) {
+      const deleteTagQ = 'DELETE FROM PropertyTags WHERE PropertyID = ? AND TagID = ?;';
+      await executeQuery(deleteTagQ, [propID, tag.TagID]);
+    }
+    
+  } catch (error) {
+    handleQueryError(res, error);
+  }
+}
+
 // Create the HTTP server
 const server = http.createServer(async (req, res) => {
   //const filePath = req.url === '/' ? 'index.html' : req.url;
@@ -333,6 +419,69 @@ const server = http.createServer(async (req, res) => {
         res.statusCode = 200;
         res.setHeader('Content-Type', 'text/plain');
         res.end('Received the form data');
+        let propReviews;
+
+        // Update property rating/count, tag count, and tag calculation
+        try {
+          // Get reviews data
+          const query = `SELECT * 
+          FROM Reviews 
+          WHERE PropertyID IN (${sanitizedID})`;
+
+          propReviews = await executeQuery(query);
+          
+          // Calculate sum & avg
+          let revSum = 0, revCount;
+          propReviews.forEach(function (rev) {
+            revSum += parseInt(rev.Rating);
+          });
+          revCount = propReviews.length;
+          let revAvg = revSum/revCount;
+
+
+          // Get list of possible tags, also probably just do this once a day via some kind of timeout event
+          const queryP = `SELECT * 
+          FROM Tags`;
+          const possibleTags = await executeQuery(queryP);
+
+          // Update Property avgRating/count
+          const updateQuery = `UPDATE Properties SET AvgRating = ?, RatingCount = ? WHERE ID = ?`;
+          await executeQuery(updateQuery, [
+            revAvg, revCount, sanitizedID
+          ]);
+
+          // Update PropFullTag tag count IF the tag EXISTS, if tag doesn't exist... create the tag with count = 1 
+          const selectFullTagsQ = 'SELECT * FROM PropFullTags WHERE PropID = ? ORDER BY Count DESC;'  
+          var propFullTags = await executeQuery(selectFullTagsQ, [
+            sanitizedID,
+          ]);
+
+          const updateQueryT = `UPDATE PropFullTags SET Count = Count + 1 WHERE PropID = ? AND TagID = ?`;
+          const insertQueryT = `INSERT INTO PropFullTags (PropID, TagID, Count) VALUES (?, ?, 1)`;
+          const tagsArr = tags.split(",");
+          for (const tag of tagsArr) {
+            const trimmedTag = tag.trim();
+            console.log(possibleTags);
+            const matchingTag = possibleTags.find((t) => t.Title === trimmedTag);
+            if (matchingTag) {
+              const tagID = matchingTag.ID;
+              const tagExists = propFullTags.some((pTag) => pTag.TagID === tagID);
+              if (tagExists) {
+                await executeQuery(updateQueryT, [sanitizedID, tagID]);
+              } else {
+                await executeQuery(insertQueryT, [sanitizedID, tagID]);
+              }
+            }
+          }
+
+          
+        console.log('Updated review');
+      } catch (error) {
+        console.error('Error executing the statement:', error);
+      }
+      // Update TAGS
+      calculatePropertyTags(sanitizedID);
+
       });
     }
   }

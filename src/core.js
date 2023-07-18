@@ -1103,30 +1103,30 @@ function openPropertyPage(id) {
       const tagContainer = document.getElementById('property-add-tags');
       const addedTags = new Set();
 
-      var tempTagdata = { Tags: ['HOA', 'Garage'] };
-
       textarea.addEventListener('keyup', function (event) {
         if (event.key === 'Enter' || event.key === ',') {
           const tagsArray = textarea.value.split(/,|\n/).map(tag => tag.trim()).filter(tag => tag !== '');
-          const tag = tagsArray.length > 0 ? tagsArray[0] : '';
           textarea.value = '';
-
+      
           // Check if user input exists in tag array, if so add it as a tag
-          for (let i = 0; i < tempTagdata.Tags.length; i++) {
-            let lowerCheckTag = tempTagdata.Tags[i].toLowerCase();
-            if (tag.toLowerCase() === lowerCheckTag) {
-              if (!addedTags.has(tag)) {
-                const tagDiv = document.createElement('div');
-                tagDiv.classList.add('tag-container');
-                tagDiv.textContent = tempTagdata.Tags[i];
-                tagContainer.appendChild(tagDiv);
-                addedTags.add(tag);
+          tagsArray.forEach(tag => {
+            for (let i = 0; i < data.PossibleTags.length; i++) {
+              let lowerCheckTag = data.PossibleTags[i].Title.toLowerCase();
+              if (tag.toLowerCase() === lowerCheckTag) {
+                if (!addedTags.has(tag)) {
+                  const tagDiv = document.createElement('div');
+                  tagDiv.classList.add('tag-container');
+                  tagDiv.textContent = data.PossibleTags[i].Title;
+                  tagContainer.appendChild(tagDiv);
+                  addedTags.add(tag);
+                }
+                break;
               }
-              break;
             }
-          }
+          });
         }
       });
+      
        // add handler for starFilter here for now
       // hanndler for filter-stars
       var filteredStars = 0;

@@ -898,6 +898,8 @@ input[type=range]:focus {
   float: inline-end;
   font-weight: bold;
   margin: 10px 0px 10px 0px;
+  display: flex;
+  flex-direction: row;
 }
 
 .property-review-name {
