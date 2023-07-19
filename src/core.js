@@ -449,11 +449,22 @@ function createPropertyAddComponent() {
   headerDet.textContent = 'Property Tags';
   reviewAddTagContainer.appendChild(headerDet);
 
+  // Create the input tag container
+  const reviewTagInputCont = document.createElement('div');
+  reviewTagInputCont.id = 'review-tag-input-container';
   // Create the input for adding tags
   const tagAddText = document.createElement('input');
   tagAddText.id = 'tag-add-text';
   tagAddText.placeholder = 'Type tags here...';
-  reviewAddTagContainer.appendChild(tagAddText);
+  tagAddText.setAttribute('autocomplete', 'off'); 
+  reviewTagInputCont.appendChild(tagAddText);
+
+  // Create possible tags container
+  const tagPossible = document.createElement('div');
+  tagPossible.id = 'tag-possible-container';
+  reviewTagInputCont.appendChild(tagPossible);
+
+  reviewAddTagContainer.appendChild(reviewTagInputCont);
 
   // Create the div for property tags
   const propertyTags = document.createElement('div');
@@ -803,32 +814,68 @@ function openPropertyPage(id) {
       propertyAddress.innerText = data.PropertyData[0].Address;
       propertyDetails.append(propertyAddress);
 
-      var propertyLeaseTerm = document.createElement('p');
-      propertyLeaseTerm.className = 'property-lease-term';
-      propertyLeaseTerm.innerText = 'Lease Term: ' + data.PropertyData[0].LeaseTerm;
-      propertyDetails.append(propertyLeaseTerm);
-
-      var propertyBedRange = document.createElement('p');
-      propertyBedRange.className = 'property-bed-range';
-      propertyBedRange.innerText = 'Bedrooms: ' + data.PropertyData[0].BedRange;
-      propertyDetails.append(propertyBedRange);
-
-      var propertyBathRange = document.createElement('p');
-      propertyBathRange.className = 'property-bath-range';
-      propertyBathRange.innerText = 'Bathrooms: ' + data.PropertyData[0].BathRange;
-      propertyDetails.append(propertyBathRange);
-
-      var propertyPriceRange = document.createElement('p');
-      propertyPriceRange.className = 'property-price-range';
-      propertyPriceRange.innerText = 'Monthly Rent: ' + data.PropertyData[0].PriceRange;
-      propertyDetails.append(propertyPriceRange);
-
-      var propertyFootageRange = document.createElement('p');
-      propertyFootageRange.className = 'property-footage-range';
-      propertyFootageRange.innerText = 'Square Footage: ' + data.PropertyData[0].SqFootageRange;
-      propertyDetails.append(propertyFootageRange);
-
-      propertyPage.append(propertyDetails);
+      var leaseTermDiv = document.createElement('div');
+      leaseTermDiv.className = 'property-info';
+      var propertyLeaseTermKey = document.createElement('p');
+      propertyLeaseTermKey.className = 'property-key';
+      propertyLeaseTermKey.innerText = 'Lease Term:';
+      leaseTermDiv.appendChild(propertyLeaseTermKey);
+      var propertyLeaseTermValue = document.createElement('p');
+      propertyLeaseTermValue.className = 'property-value';
+      propertyLeaseTermValue.innerText = data.PropertyData[0].LeaseTerm;
+      leaseTermDiv.appendChild(propertyLeaseTermValue);
+      propertyDetails.appendChild(leaseTermDiv);
+      
+      var bedRangeDiv = document.createElement('div');
+      bedRangeDiv.className = 'property-info';
+      var propertyBedRangeKey = document.createElement('p');
+      propertyBedRangeKey.className = 'property-key';
+      propertyBedRangeKey.innerText = 'Bedrooms:';
+      bedRangeDiv.appendChild(propertyBedRangeKey);
+      var propertyBedRangeValue = document.createElement('p');
+      propertyBedRangeValue.className = 'property-value';
+      propertyBedRangeValue.innerText = data.PropertyData[0].BedRange;
+      bedRangeDiv.appendChild(propertyBedRangeValue);
+      propertyDetails.appendChild(bedRangeDiv);
+      
+      var bathRangeDiv = document.createElement('div');
+      bathRangeDiv.className = 'property-info';
+      var propertyBathRangeKey = document.createElement('p');
+      propertyBathRangeKey.className = 'property-key';
+      propertyBathRangeKey.innerText = 'Bathrooms:';
+      bathRangeDiv.appendChild(propertyBathRangeKey);
+      var propertyBathRangeValue = document.createElement('p');
+      propertyBathRangeValue.className = 'property-value';
+      propertyBathRangeValue.innerText = data.PropertyData[0].BathRange;
+      bathRangeDiv.appendChild(propertyBathRangeValue);
+      propertyDetails.appendChild(bathRangeDiv);
+      
+      var priceRangeDiv = document.createElement('div');
+      priceRangeDiv.className = 'property-info';
+      var propertyPriceRangeKey = document.createElement('p');
+      propertyPriceRangeKey.className = 'property-key';
+      propertyPriceRangeKey.innerText = 'Monthly Rent:';
+      priceRangeDiv.appendChild(propertyPriceRangeKey);
+      var propertyPriceRangeValue = document.createElement('p');
+      propertyPriceRangeValue.className = 'property-value';
+      propertyPriceRangeValue.innerText = data.PropertyData[0].PriceRange;
+      priceRangeDiv.appendChild(propertyPriceRangeValue);
+      propertyDetails.appendChild(priceRangeDiv);
+      
+      var footageRangeDiv = document.createElement('div');
+      footageRangeDiv.className = 'property-info';
+      var propertyFootageRangeKey = document.createElement('p');
+      propertyFootageRangeKey.className = 'property-key';
+      propertyFootageRangeKey.innerText = 'Square Footage:';
+      footageRangeDiv.appendChild(propertyFootageRangeKey);
+      var propertyFootageRangeValue = document.createElement('p');
+      propertyFootageRangeValue.className = 'property-value';
+      propertyFootageRangeValue.innerText = data.PropertyData[0].SqFootageRange;
+      footageRangeDiv.appendChild(propertyFootageRangeValue);
+      propertyDetails.appendChild(footageRangeDiv);
+      
+      propertyPage.appendChild(propertyDetails);
+      
 
       // Floor plans
       var floorPlanLeft = document.createElement('div');
@@ -966,9 +1013,24 @@ function openPropertyPage(id) {
         
       });
 
+      reviewAddForm.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+        }
+      });
+      
+      
       reviewAddDrop.addEventListener('click', (event) => {
+        event.stopPropagation();
         toggleBox(reviewAddDropdown);
       });
+
+      document.addEventListener('click', (event) => {
+        if (!reviewAddDrop.contains(event.target)) {
+          reviewAddDropdown.style.display = 'none';
+        }
+      });
+      
 
       // Add listener to each dropdown item
       var dropdownItem = document.querySelectorAll('#review-term-dropdown a');
@@ -979,12 +1041,6 @@ function openPropertyPage(id) {
           reviewAddDrop.innerHTML = clickedItem.innerHTML;
           reviewAddDropdown.style.display = 'none';
         });
-      });
-
-      document.addEventListener('click', (event) => {
-        if (reviewAddDropdown.style.display === 'none' && !reviewAddDrop.contains(event.target) && !reviewAddDropdown.contains(event.target)) {
-          toggleBox(reviewAddDropdown);
-        }
       });
 
       reviewAddSub.addEventListener('click', (event) => {
@@ -1101,31 +1157,96 @@ function openPropertyPage(id) {
       // Property review tag auto correct element
       const textarea = document.getElementById('tag-add-text');
       const tagContainer = document.getElementById('property-add-tags');
+      const tagSuggestions = document.getElementById('tag-possible-container');
       const addedTags = new Set();
 
-      textarea.addEventListener('keyup', function (event) {
-        if (event.key === 'Enter' || event.key === ',') {
-          const tagsArray = textarea.value.split(/,|\n/).map(tag => tag.trim()).filter(tag => tag !== '');
-          textarea.value = '';
+      function addTag(tag) {
+        if (!addedTags.has(tag)) {
+          const tagDiv = document.createElement('div');
+          tagDiv.classList.add('tag-container');
+          tagDiv.textContent = tag;
+          tagContainer.appendChild(tagDiv);
+          addedTags.add(tag);
+        }
+      }
       
-          // Check if user input exists in tag array, if so add it as a tag
-          tagsArray.forEach(tag => {
-            for (let i = 0; i < data.PossibleTags.length; i++) {
-              let lowerCheckTag = data.PossibleTags[i].Title.toLowerCase();
-              if (tag.toLowerCase() === lowerCheckTag) {
-                if (!addedTags.has(tag)) {
-                  const tagDiv = document.createElement('div');
-                  tagDiv.classList.add('tag-container');
-                  tagDiv.textContent = data.PossibleTags[i].Title;
-                  tagContainer.appendChild(tagDiv);
-                  addedTags.add(tag);
-                }
-                break;
-              }
+
+      textarea.addEventListener('input', handleTagInput);
+      textarea.addEventListener('keyup', handleTagInput);
+
+      function handleTagInput() {
+        console.log(textarea.value);
+        if (textarea.value === '') {
+          tagSuggestions.style.display = 'none';
+          return;
+        } else {
+          tagSuggestions.style.display = 'block';
+        }
+          
+        const inputText = textarea.value.trim().toLowerCase();
+        const matchingTags = getMatchingTags(inputText);
+      
+        // Clear previous tag suggestions
+        tagSuggestions.innerHTML = '';
+      
+        // Display matching tag suggestions
+        matchingTags.forEach(tag => {
+          const tagOption = document.createElement('div');
+          tagOption.classList.add('tag-suggestion');
+          tagOption.textContent = tag.Title;
+          tagOption.addEventListener('click', () => {
+            addTag(tag.Title);
+            textarea.value = '';
+            tagSuggestions.innerHTML = '';
+          });
+          tagSuggestions.appendChild(tagOption);
+        });
+
+        // Select the first tag suggestion
+        const allSuggestions = tagSuggestions.querySelectorAll('.tag-suggestion');
+        if (allSuggestions.length > 0) {
+          allSuggestions[0].classList.add('selected');
+        }
+      }
+
+      function getMatchingTags(inputText) {
+        return data.PossibleTags.filter(tag => tag.Title.toLowerCase().startsWith(inputText));
+      }
+
+
+      textarea.addEventListener('keydown', function(event) {
+        console.log(tagSuggestions);
+        if (event.key === 'Enter' || event.key === ',') {
+          event.preventDefault();
+          const selectedSuggestion = tagSuggestions.querySelector('.tag-suggestion.selected');
+          if (selectedSuggestion) {
+            const selectedTag = selectedSuggestion.textContent;
+            addTag(selectedTag);
+            textarea.value = '';
+            tagSuggestions.innerHTML = '';
+          }
+        } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+          event.preventDefault();
+          const selectedSuggestion = tagSuggestions.querySelector('.tag-suggestion');
+          const allSuggestions = tagSuggestions.querySelectorAll('.tag-suggestion');
+          let index = Array.from(allSuggestions).indexOf(selectedSuggestion);
+      
+          if (event.key === 'ArrowUp') {
+            index = index > 0 ? index - 1 : allSuggestions.length - 1;
+          } else if (event.key === 'ArrowDown') {
+            index = index < allSuggestions.length - 1 ? index + 1 : 0;
+          }
+          console.log(index);
+          allSuggestions.forEach((suggestion, i) => {
+            if (i === index) {
+              suggestion.classList.add('selected');
+            } else {
+              suggestion.classList.remove('selected');
             }
           });
         }
       });
+      
       
        // add handler for starFilter here for now
       // hanndler for filter-stars

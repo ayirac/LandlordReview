@@ -638,7 +638,7 @@ input[type=range]:focus {
 
 .property-details {
   display: grid;
-  grid-template-columns: repeat(2, 38%); /* Two columns with equal width */
+  grid-template-columns: repeat(2, 25%); /* Two columns with equal width */
   grid-gap: 5px;
   padding: 0px 5px 5px 10px;
   border-bottom: 1px solid #e0e0e0;
@@ -647,7 +647,7 @@ input[type=range]:focus {
 }
 
 .property-details p {
-  flex-basis: 50%;
+  flex-basis: 30%;  
   box-sizing: border-box;
   padding: 0px 0px 0px 0px;
   margin: 0;
@@ -1232,3 +1232,46 @@ table td, table th {
   height: 0;
 }
 
+
+.property-info {
+  display: flex;
+  align-items: center;
+}
+
+.property-key {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.property-value {
+  margin: 0;
+}
+
+#tag-possible-container {
+  position: absolute;
+  z-index: 9999;
+  background-color: white;
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+  /* Additional styling as needed */
+}
+#review-tag-input-container {
+  position: relative;
+}
+
+.tag-suggestion {
+  padding: 5px;
+  background-color: white;
+  border: 1px solid #ccc;
+}
+
+.tag-suggestion:hover {
+  background-color: rgb(240, 230, 230);
+  border: 1px solid #bebebe;
+}
+
+#property-add-tags {
+  height: 100px;
+}
+/* Adjust the positioning and styling as per your requirements */
