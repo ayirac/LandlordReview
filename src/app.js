@@ -5,6 +5,7 @@ const mysql = require('mysql2');
 const url = require('url');
 var xss = require("xss");
 var formidable = require("formidable");
+const { type } = require('os');
 
 
 const parentDirectory = path.join(__dirname, '..');
@@ -40,6 +41,38 @@ const executeQuery = async (query, params) => {
     connection.release();
   }
 };
+
+async function sendReviews(type, ord, pageNumber, recordsRequested, sanitizedPropertyID) {
+  const offset = pageNumber * recordsRequested
+  var order, reviews;
+  if (ord === 'ascend')
+    order = 'ASC';
+  else if (ord === 'descend')
+    order = 'DESC';
+  
+
+  if (type === 'date') {
+    const query = `
+      SELECT * 
+      FROM Reviews 
+      WHERE PropertyID IN (${sanitizedPropertyID})
+      ORDER BY ID ${order}
+      LIMIT ${recordsRequested}
+      OFFSET ${offset} `;
+    reviews = await executeQuery(query);
+  } else if (type === 'rating') {
+    const query = `
+      SELECT * 
+      FROM Reviews 
+      WHERE PropertyID IN (${sanitizedPropertyID})
+      ORDER BY Rating ${order}
+      LIMIT ${recordsRequested}
+      OFFSET ${offset}`;
+    reviews = await executeQuery(query);
+  }
+  console.log(reviews);
+  return reviews;
+}
 
 // Utility function to determine the content type based on file extension
 function getContentType(filePath) {
@@ -249,14 +282,10 @@ const server = http.createServer(async (req, res) => {
         } 
 
         try {
-          const query = `SELECT * 
-          FROM Reviews 
-          WHERE PropertyID IN (${sanitizedID})`;
-
-          propReviews = await executeQuery(query);
+          propReviews = await sendReviews('date', 'ascend', 0, 15, sanitizedID);
           } catch (error) {
             handleQueryError(res, error);
-        }
+          }
 
         const responseData = {
           FloorPlans: propFpData,
@@ -272,6 +301,31 @@ const server = http.createServer(async (req, res) => {
       }
     }
   }  
+  else if (parsedUrl.pathname === '/getreviews.html') {
+
+    if (parsedUrl.searchParams.has('type') && parsedUrl.searchParams.has('order') && parsedUrl.searchParams.has('pagenumb') && parsedUrl.searchParams.has('id')) {
+      const sortType = parsedUrl.searchParams.get('type'); // santize all of this..
+      const sortOrder = parsedUrl.searchParams.get('order');
+      const sortPageNumb = parsedUrl.searchParams.get('pagenumb');
+      const sortPropID = parsedUrl.searchParams.get('id');
+      try {
+        const reviews = await sendReviews(sortType, sortOrder, sortPageNumb, 15, sortPropID); // always send 15 for now.. maybe later change it to variable
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        const responseData = {
+          Reviews: reviews
+        };
+        res.end(JSON.stringify(responseData));
+      } catch (error) {
+        console.log('error sending reviews: ' + error);
+      }
+    } else {
+        res.statusCode = 404;
+        res.setHeader('Content-Type', 'text/plain');
+        res.end('File not found');
+        return;
+    }
+  }
   else if (contentType === "image/png" || contentType === "image/jpeg" || contentType === "image/svg+xml" ||contentType === 'text/html' || contentType === 'text/javascript' || contentType === 'text/css') {
       const file = path.join(parentDirectory, parsedUrl.pathname);
       fs.readFile(file, (err, content) => {

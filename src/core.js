@@ -28,7 +28,49 @@ function currentSlide(n) {
   showSlides(slideIndex = n);
 }
 
+function createSortDropdown(options) {
+  // Create the main container
+  const dropdownContainer = document.createElement('div');
+  dropdownContainer.className = 'dropdown';
+
+  // Create the button
+  const dropbtn = document.createElement('button');
+  dropbtn.className = 'dropbtn';
+  dropbtn.id = 'sort-drop-b';
+
+  const dropbtnText = document.createElement('span');
+  dropbtnText.className = 'selected-text';
+  dropbtnText.innerText = 'Sort: Default';
+  dropbtn.appendChild(dropbtnText);
+
+  const icon = document.createElement('i');
+  icon.className = 'fas fa-chevron-down';
+  dropbtn.appendChild(icon);
+
+  // Create the dropdown content
+  const dropdownContent = document.createElement('div');
+  dropdownContent.className = 'dropdown-content';
+  dropdownContent.id = 'sort-drop-c';
+  dropdownContent.style.display = 'none';
+
+  // Append options to the dropdown content
+  options.forEach(option => {
+    const link = document.createElement('a');
+    link.href = '#';
+    link.id = option.id;
+    link.innerText = option.text;
+    dropdownContent.appendChild(link);
+  });
+
+  // Append elements to the main container
+  dropdownContainer.appendChild(dropbtn);
+  dropdownContainer.appendChild(dropdownContent);
+
+  return dropdownContainer;
+}
+
 function addReviews(thresh, reviewsContainer, data) {
+  reviewsContainer.innerHTML = '';
   let atleastOneReview = false;
   for (let i = 0; i < data.Reviews.length; i++) {
     if (data.Reviews[i].Rating < thresh)
@@ -248,6 +290,36 @@ function getReviewStarFilterContainer() {
     starFilterCont.appendChild(starRating);
   }
   return starFilterCont;
+}
+
+// cont here
+var pagenumb = 0; // change on input/prev/next
+var type = 'date'; // change on dropdown
+var order = 'ascend'; // change on dropdown
+var savedThresh = 0.0; // good
+
+var dataStream = {};
+
+function sortPropertyPageReviews(type, order, pagenumb, id) {
+  return fetch('/getreviews.html?type=' + type + '&order=' + order + '&pagenumb=' + pagenumb + '&id=' + id)
+    .then(response => response.json())
+    .then(da => { 
+      dataStream = da;
+      console.log(dataStream);
+
+      var reviewCont = document.getElementById('prc');
+      addReviews(savedThresh, reviewCont, dataStream);
+      var reviewsPerPage = 15;
+
+      if (dataStream.Reviews.length < reviewsPerPage) {
+        return false;
+      }
+      return true;
+    })
+    .catch(error => {
+      console.error('Error fetching reviews:', error);
+      return false;
+    });
 }
 
 function getReviewStarContainer(property, addText) {
@@ -620,7 +692,7 @@ function createPropertyAddComponent() {
 }
 
 function openPropertyPage(id) {
-  
+
   // Add display: none to frame-container, load in a detailed-property page dynamnically
   document.getElementById('frame-container').style.display = 'none';
   var propertyPageW = document.getElementById('property-page-container');
@@ -946,6 +1018,7 @@ function openPropertyPage(id) {
 
       var reviewsContainer = document.createElement('div');
       reviewsContainer.className = 'property-reviews-container';
+      reviewsContainer.id = 'prc';
 
       // Left side review section
       var reviewLeftCont = document.createElement('div');
@@ -959,9 +1032,20 @@ function openPropertyPage(id) {
 
       var reviewFilterText = document.createElement('h4');
       reviewFilterText.innerText = 'Filters';
+
+      const options = [
+        { id: 'default', text: 'Sort: Default' },
+        { id: 'rating-ascending', text: 'Rating Ascend' },
+        { id: 'rating-descending', text: 'Rating Descend' },
+        { id: 'date-ascending', text: 'Date Ascend' },
+        { id: 'date-descending', text: 'Date Descend' },
+      ];    
+      var reviewSortCont = createSortDropdown(options);
+      reviewSortCont.id = "add-review-drop"
       
       reviewLeftCont.append(reviewCont);
       reviewLeftCont.append(reviewFilterText);
+      reviewLeftCont.append(reviewSortCont);
       reviewLeftCont.append(filterStarCont);
       reviewLeftCont.append(progressBarWrapper);
 
@@ -975,10 +1059,34 @@ function openPropertyPage(id) {
       addReviews(0, reviewsContainer, data);
       reviewRightCont.append(reviewsContainer);
 
+      var reviewsPageManagerContainer = document.createElement('div');
+      reviewsPageManagerContainer.className = 'page-manager-container';
+      reviewsPageManagerContainer.id = 'reviews-page-manager-container';
+
+      var prevPage = document.createElement('a');
+      prevPage.className = 'prev-page';
+      prevPage.innerText = 'Previous Page';
+
+      if (pagenumb === 0)
+        prevPage.style.display = 'none';
+      reviewsPageManagerContainer.append(prevPage);
+
+      var pageInput = document.createElement('input');
+      pageInput.className = 'page-input';
+      pageInput.value = '0';
+      reviewsPageManagerContainer.append(pageInput);
+
+      var nextPage = document.createElement('a');
+      nextPage.className = 'next-page';
+      nextPage.innerText = 'Next Page';
+
+      if (data.Reviews.length < 15)
+        nextPage.style.display = 'none';
+      reviewsPageManagerContainer.append(nextPage);
+
+      reviewRightCont.append(reviewsPageManagerContainer);
+
       // Add a review section
-      var reviewAddContainer = document.createElement('div');
-      reviewAddContainer.className = 'property-review-add-container';
-      reviewRightCont.append(reviewAddContainer);
       reviewBotHead.append(reviewLeftCont);
       reviewBotHead.append(reviewRightCont);
       
@@ -991,7 +1099,6 @@ function openPropertyPage(id) {
       propertyPageContainer.append(propertyPage);
       document.body.append(propertyPageContainer);
 
-
       // HANDLERS
       // Submit button handler for custom data insert
       const reviewAddForm = document.getElementById('review-add-container');
@@ -1003,17 +1110,120 @@ function openPropertyPage(id) {
       const inputHiddenDrop = document.getElementById('hidden-term');
       const inputHiddenPropID = document.getElementById('hidden-prop-id');
 
-      // Calculate or gather additional data before form submission
-      // For example, getting tags from a div with an ID "tagsContainer"
-      //const tags = Array.from(tagsInput.getElementsByClassName('tag-container')).map(tag => tag.textContent);
-      //tagsInput.value = tags.join(',');
 
-      reviewAddForm.addEventListener('submit', (event) => {
-        event.preventDefault();
+      const addReviewDrop = document.getElementById('add-review-drop');
+      const dropDownButton = addReviewDrop.querySelector('#sort-drop-b')
+      const dropDownButtonTxt = dropDownButton.querySelector('.selected-text')
+      const dropDownBox = addReviewDrop.querySelector('#sort-drop-c')
+      var dropdownItems = addReviewDrop.querySelectorAll('.dropdown-content a');
+
+      dropDownButton.addEventListener('click', () => {
+        toggleBox(dropDownBox);
+      });
+
+      // Add listener to each dropdown item
+      dropdownItems.forEach(async function(item) {
+        item.addEventListener('click', async function(event) {
+          var clickedItem = event.target;
+          dropDownButtonTxt.innerHTML = clickedItem.innerHTML;
+          dropDownButtonTxt.dataset.selected = clickedItem.id;
+          
+
+          var pagenumb = 0; // get pg # from some variable, perhaps.. i need a page # component i.e start at 0, and just pull the .value
+          const urlParams = new URLSearchParams(window.location.search);
+          const id = urlParams.get('id')
+          var itemId = clickedItem.id;
+
+          if (itemId === 'rating-ascending') {
+            type = 'rating';
+            order = 'ascend';
+          }
+          else if (itemId === 'rating-descending') {
+            type = 'rating';
+            order = 'descend';
+          }
+          else if (itemId === 'date-ascending') {
+            type = 'date';
+            order = 'ascend';
+          }
+          else if (itemId === 'date-descending') {
+            type = 'date';
+            order = 'descend';
+          } 
+          
+          await sortPropertyPageReviews(type, order, pagenumb, id);
+          toggleBox(dropDownBox);
+
+          // check if prev page / next page buttons should be removed, i.e reviews = 0 HERE
+          const managerNext = reviewsPageManagerCont.querySelector('.next-page');
+          const managerPrev = reviewsPageManagerCont.querySelector('.prev-page');
+          const managerInput = reviewsPageManagerCont.querySelector('.page-input');
+
+          if (dataStream.Reviews.length === 0) {
+            managerPrev.style.display = 'none';
+          } else if (dataStream.Reviews.length < 15) {
+            managerNext.style.display = 'none';
+          }
+          managerInput.value = '0';
+        });
+      });
+
+      const reviewsPageManagerCont = document.getElementById('reviews-page-manager-container');
+      const managerNext = reviewsPageManagerCont.querySelector('.next-page');
+      const managerPrev = reviewsPageManagerCont.querySelector('.prev-page');
+      const managerInput = reviewsPageManagerCont.querySelector('.page-input');// cont
+      managerNext.addEventListener('click', function(event) { // go next page & bounds check to see if next page should vanish or not..
+        pagenumb++; // cont here, tyad
+        managerInput.value = pagenumb;
+        //managerNext.style.display = 'none';
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id')
+        sortPropertyPageReviews(type, order, pagenumb, id)
+          .then(reviewsPresent => {
+            if (reviewsPresent === false) {
+              managerNext.style.display = 'none';
+            }
+            managerPrev.style.display = 'initial';
+          })
+          .catch(error => {
+            // Handle any error that occurred during fetch or processing
+            console.error('Error in sortPropertyPageReviews:', error);
+          });
+        
         
       });
 
-      reviewAddForm.addEventListener('keydown', (event) => {
+      managerPrev.addEventListener('click', function(event) { // go prev page & bounds check to see if prev page should vanish or not... next page not needed
+        pagenumb--;
+        managerInput.value = pagenumb;
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id')
+        sortPropertyPageReviews(type, order, pagenumb, id);
+
+        if (pagenumb === 0)
+          managerPrev.style.display = 'none';
+        managerNext.style.display = 'initial';
+      });
+
+      managerInput.addEventListener('keydown', function(event) { // bounds check if good, trigger getsReviews()
+        if (event.key === 'Enter') {
+          alert('poop');
+        }
+      });
+
+      
+      // Close popup boxes when clicking outside their containers
+      document.addEventListener('click', (event) => {
+        if (dropDownBox.style.display != 'none' && !dropDownButton.contains(event.target) && !dropDownBox.contains(event.target)) {
+          toggleBox(dropDownBox);
+        }
+      });
+
+      reviewAddForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+      });
+
+      reviewAddForm.addEventListener('keydown', (event) => { 
         if (event.key === 'Enter') {
           event.preventDefault();
         }
@@ -1175,7 +1385,6 @@ function openPropertyPage(id) {
       textarea.addEventListener('keyup', handleTagInput);
 
       function handleTagInput() {
-        console.log(textarea.value);
         if (textarea.value === '') {
           tagSuggestions.style.display = 'none';
           return;
@@ -1277,8 +1486,29 @@ function openPropertyPage(id) {
                 reviewRightCont.removeChild(reviewRightCont.firstChild);
               }
               reviewsContainer.innerHTML = '';
+              savedThresh = filteredStars;
               addReviews(filteredStars, reviewsContainer, data);
-              reviewRightCont.append(reviewsContainer);
+              
+              reviewRightCont.prepend(reviewsContainer);
+
+              // check if prev page / next page buttons should be removed, i.e reviews = 0 HERE
+              const managerNext = reviewsPageManagerCont.querySelector('.next-page');
+              const managerPrev = reviewsPageManagerCont.querySelector('.prev-page');
+              const managerInput = reviewsPageManagerCont.querySelector('.page-input');
+
+              if (dataStream.Reviews.length === 0) {
+                managerPrev.style.display = 'none';
+              } else {
+                managerPrev.style.display = 'initial';
+              
+                if (dataStream.Reviews.length < 15) {
+                  managerNext.style.display = 'none';
+                } else {
+                  managerNext.style.display = 'initial';
+                }
+              }              
+
+              managerInput.value = '0';
             }
           });
           
@@ -1286,7 +1516,7 @@ function openPropertyPage(id) {
             for (let i = 0; i < filteredStars; i++) {
               stars[i].textContent = '★';
             }
-            for (let i = filteredStars; i < 5; i++) {
+            for (let i = filteredStars; i <  5; i++) {
               stars[i].textContent = '☆';
             }
           });
@@ -1374,7 +1604,8 @@ function initializeMap() {
       item.addEventListener('click', function(event) {
         var clickedItem = event.target;
         var itemId = clickedItem.id;
-        dropDownButton.innerHTML = "Sort: " + clickedItem.innerHTML;
+        dropDownButton.innerHTML = clickedItem.innerHTML;
+        
       });
     });
     

@@ -850,12 +850,12 @@ input[type=range]:focus {
 
 .property-review-component h4 {
   margin: 0;
-  margin-top: 15px;
+  padding: 0px 0px 5px 0px;
 }
 
 .property-reviews-container {
   padding: 5px;
-  max-height: 50vh;
+  height: 70vh;
   overflow-y: auto;
   
 }
@@ -1275,3 +1275,66 @@ table td, table th {
   height: 100px;
 }
 /* Adjust the positioning and styling as per your requirements */
+
+
+#add-review-drop {
+  position: relative; 
+  max-width: 250px;
+}
+
+#add-review-drop #sort-drop-c {
+  position: absolute;
+  display: block;
+  z-index: 1;
+}
+
+#add-review-drop #sort-drop-b {
+  width: 200px;
+}
+
+/* Set a fixed width for the container to hold all elements */
+.page-manager-container {
+  width: 300px; /* Adjust the width based on the maximum possible width of the elements */
+  margin: 0 auto; /* Center the container horizontally */
+  display: flex;
+  justify-content: center;
+  gap: 5px; /* Reduce the spacing between elements */
+  position: relative; /* Add relative positioning to the container */
+}
+
+/* Style for the "Previous" and "Next" links */
+a.prev-page,
+a.next-page {
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: background-color 0.3s, color 0.3s;
+  cursor: pointer;
+  position: absolute; /* Use absolute positioning */
+}
+
+/* Position the "Previous" link to the left and "Next" link to the right */
+a.prev-page {
+  left: 0;
+}
+
+a.next-page {
+  right: 0;
+  margin-right: 30px;
+}
+
+/* Hover effect for the "Previous" and "Next" links */
+a.prev-page:hover,
+a.next-page:hover {
+  color: #414141; /* You can change the color to your preference */
+}
+
+/* Style for the input box */
+input.page-input {
+  width: 30px; /* Adjust the width based on your preference */
+  padding: 5px;
+  border: 2px solid #007bff; /* You can change the color to your preference */
+  border-radius: 3px;
+  text-align: center;
+  font-size: 16px; /* You can change the font size to your preference */
+  margin-right: 5px; /* Add some right margin to the input box */
+}
