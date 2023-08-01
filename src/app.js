@@ -190,18 +190,32 @@ const server = http.createServer(async (req, res) => {
   
   
   if (parsedUrl.pathname === '/map.html') {
-    if (!parsedUrl.searchParams.has('ids')) {
+    console.log(parsedUrl.searchParams);
+    if (!parsedUrl.searchParams.has('ids')) { // check for bbox bounds too/existance
       // Perform a query to fetch the required data, right now i just send the entire table.
       try {
-        const propResults = await executeQuery('SELECT ID, X, Y FROM Properties');
+      const minX = parseFloat(parsedUrl.searchParams.get('minX'));
+      const minY = parseFloat(parsedUrl.searchParams.get('minY'));
+      const maxX = parseFloat(parsedUrl.searchParams.get('maxX'));
+      const maxY = parseFloat(parsedUrl.searchParams.get('maxY'));
+
+
+        // Your SQL query with the bounding box filter
+        const query = `SELECT * FROM Properties
+        WHERE X >= ? AND X <= ? AND Y >= ? AND Y <= ?`;
+        const params = [minX, maxX, minY, maxY];
+
+        const propResults = await executeQuery(query, params);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
+        console.log(propResults);
         res.end(JSON.stringify(propResults));
       } catch (error) {
         handleQueryError(res, error);
       }
     }
     else {
+      console.log("trying to refresh here");
       const selectedIds = xss(parsedUrl.searchParams.get('ids')).split(',');
       if (selectedIds.length > 1) {
         // Perform a query to fetch the specific records based on the selected IDs

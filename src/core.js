@@ -1,6 +1,64 @@
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
 
+var propertyGlobalData = {};
+var map;
+var cluster;
+var markerGroup;
+var mapReviewsType = 'AvgRating';
+var mapReviewOrder = 'asc';
+var mapReviewPageNumb = 0;
+var propsPerPageN = 30;
+
+
+function fetchGlobalPropertyData() {
+  // Get the current map viewport's bounds
+  const bounds = map.getBounds();
+  const northEast = bounds.getNorthEast();
+  const southWest = bounds.getSouthWest();
+
+  // Prepare the bounding box information to send to the server
+  const boundingBox = {
+    minX: southWest.lng,
+    minY: southWest.lat,
+    maxX: northEast.lng,
+    maxY: northEast.lat
+  };
+
+    fetch(`/map.html?minX=${boundingBox.minX}&minY=${boundingBox.minY}&maxX=${boundingBox.maxX}&maxY=${boundingBox.maxY}`)
+    .then(response => response.json())
+    .then(data => {
+      // create posts
+      propertyGlobalData = data;
+      console.log(data);
+      getPropertyPages();
+      //addPosts(data);
+      markerGroup.clearLayers();
+      cluster.clearLayers();
+      data.forEach(property => {
+        // create markers
+        var marker =  new customMarker(new L.LatLng(property.Y, property.X), {
+          propertyData: property
+        }).addTo(cluster);
+        // Customize the marker if needed
+        // marker.bindPopup(property.Address);
+      });
+        let visibleMarkers = [];
+        let bounds = map.getBounds();
+
+        cluster.eachLayer(function (marker) {
+          var markerLatLng = marker.getLatLng();
+          if (bounds.contains(markerLatLng)) {
+            visibleMarkers.push(marker);
+          }
+        });
+        //displayVisibleMarkersData(visibleMarkers);
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+  }
+
 var customMarker = L.Marker.extend({
   options: { 
      ID: 0,
@@ -26,6 +84,82 @@ function plusSlides(n) {
 
 function currentSlide(n) {
   showSlides(slideIndex = n);
+}
+
+function addPageManagerHandlers(managerName) {
+  const reviewsPageManagerCont = document.getElementById(managerName);
+  const managerNext = reviewsPageManagerCont.querySelector('.next-page');
+  const managerPrev = reviewsPageManagerCont.querySelector('.prev-page');
+  const managerInput = reviewsPageManagerCont.querySelector('.page-input');// cont
+  managerNext.addEventListener('click', function(event) { // go next page & bounds check to see if next page should vanish or not..
+    pagenumb++; // cont here, tyad
+    managerInput.value = pagenumb;
+    //managerNext.style.display = 'none';
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id')
+    
+    sortPropertyPageReviews(type, order, pagenumb, id)
+      .then(reviewsPresent => {
+        if (reviewsPresent === false) {
+          managerNext.style.display = 'none';
+        }
+        managerPrev.style.display = 'initial';
+      })
+      .catch(error => {
+        console.error('Error in sortPropertyPageReviews:', error);
+      });
+    
+    
+  });
+
+  managerPrev.addEventListener('click', function(event) { // go prev page & bounds check to see if prev page should vanish or not... next page not needed
+    pagenumb--;
+    managerInput.value = pagenumb;
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id')
+    sortPropertyPageReviews(type, order, pagenumb, id);
+
+    if (pagenumb === 0)
+      managerPrev.style.display = 'none';
+    managerNext.style.display = 'initial';
+  });
+
+  managerInput.addEventListener('keydown', function(event) { // bounds check if good, trigger getsReviews()
+    if (event.key === 'Enter') {
+      alert('poop');
+    }
+  });
+}
+
+function addPageManagerHandlersM(managerName, typ, ord, propsPerPage) { // need to adjust this... pagenumb, etc-yada :)
+  const reviewsPageManagerCont = document.getElementById(managerName);
+  const managerNext = reviewsPageManagerCont.querySelector('.next-page');
+  const managerPrev = reviewsPageManagerCont.querySelector('.prev-page');
+  const managerInput = reviewsPageManagerCont.querySelector('.page-input');
+  managerNext.addEventListener('click', function(event) { // go next page & bounds check to see if next page should vanish or not..
+    mapReviewPageNumb++;
+
+    let reviewPresent = createPropertyPage(mapReviewPageNumb, propsPerPage);
+    console.log(reviewPresent);
+    updateMapPropertyListNavButtons(mapReviewPageNumb, reviewPresent);
+    
+      
+    
+  });
+
+  managerPrev.addEventListener('click', function(event) { // go prev page & bounds check to see if prev page should vanish or not... next page not needed
+    mapReviewPageNumb--;
+
+    let reviewPresent = createPropertyPage(mapReviewPageNumb, propsPerPage);
+    console.log(reviewPresent);
+    updateMapPropertyListNavButtons(mapReviewPageNumb, reviewPresent);
+
+  managerInput.addEventListener('keydown', function(event) { // bounds check if good, trigger getsReviews()
+    if (event.key === 'Enter') {
+      alert('poop');
+    }
+  });
+});
 }
 
 function createSortDropdown(options) {
@@ -302,6 +436,28 @@ var dataStream = {};
 
 function sortPropertyPageReviews(type, order, pagenumb, id) {
   return fetch('/getreviews.html?type=' + type + '&order=' + order + '&pagenumb=' + pagenumb + '&id=' + id)
+    .then(response => response.json())
+    .then(da => { 
+      dataStream = da;
+      console.log(dataStream);
+      
+      var reviewCont = document.getElementById('prc');
+      addReviews(savedThresh, reviewCont, dataStream);
+      var reviewsPerPage = 15;
+
+      if (dataStream.Reviews.length < reviewsPerPage) {
+        return false;
+      }
+      return true;
+    })
+    .catch(error => {
+      console.error('Error fetching reviews:', error);
+      return false;
+    });
+}
+
+function refreshMapPageProperties(type, order, pagenumb, id) {
+  return fetch('/map.html?type=' + type + '&order=' + order + '&pagenumb=' + pagenumb + '&id=' + id)
     .then(response => response.json())
     .then(da => { 
       dataStream = da;
@@ -1168,48 +1324,8 @@ function openPropertyPage(id) {
         });
       });
 
-      const reviewsPageManagerCont = document.getElementById('reviews-page-manager-container');
-      const managerNext = reviewsPageManagerCont.querySelector('.next-page');
-      const managerPrev = reviewsPageManagerCont.querySelector('.prev-page');
-      const managerInput = reviewsPageManagerCont.querySelector('.page-input');// cont
-      managerNext.addEventListener('click', function(event) { // go next page & bounds check to see if next page should vanish or not..
-        pagenumb++; // cont here, tyad
-        managerInput.value = pagenumb;
-        //managerNext.style.display = 'none';
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id')
-        sortPropertyPageReviews(type, order, pagenumb, id)
-          .then(reviewsPresent => {
-            if (reviewsPresent === false) {
-              managerNext.style.display = 'none';
-            }
-            managerPrev.style.display = 'initial';
-          })
-          .catch(error => {
-            // Handle any error that occurred during fetch or processing
-            console.error('Error in sortPropertyPageReviews:', error);
-          });
-        
-        
-      });
-
-      managerPrev.addEventListener('click', function(event) { // go prev page & bounds check to see if prev page should vanish or not... next page not needed
-        pagenumb--;
-        managerInput.value = pagenumb;
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id')
-        sortPropertyPageReviews(type, order, pagenumb, id);
-
-        if (pagenumb === 0)
-          managerPrev.style.display = 'none';
-        managerNext.style.display = 'initial';
-      });
-
-      managerInput.addEventListener('keydown', function(event) { // bounds check if good, trigger getsReviews()
-        if (event.key === 'Enter') {
-          alert('poop');
-        }
-      });
+      // add handlers for the page inputs for review page
+      addPageManagerHandlers('reviews-page-manager-container');
 
       
       // Close popup boxes when clicking outside their containers
@@ -1640,44 +1756,31 @@ function initializeMap() {
       }
     });
 
-    var map = L.map('map', {attributionControl: false}).setView([42.23, -121.78], 13);
+    map = L.map('map', {attributionControl: false}).setView([42.23, -121.78], 13);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
     // Create a layer group for the markers
-    var markerGroup = L.layerGroup();
+    markerGroup = L.layerGroup();
     markerGroup.addTo(map);
-        var cluster = L.markerClusterGroup({
+        cluster = L.markerClusterGroup({
           spiderfyOnMaxZoom: false,
           disableClusteringAtZoom: 17
         }).addTo(map);
 
-    fetch('/map.html')
-      .then(response => response.json())
-      .then(data => {
-        data.forEach(property => {
-          var marker =  new customMarker(new L.LatLng(property.Y, property.X), {
-            propertyData: property
-          }).addTo(cluster);
-          // Customize the marker if needed
-          // marker.bindPopup(property.Address);
-        });
-          let visibleMarkers = [];
-          let bounds = map.getBounds();
 
-          cluster.eachLayer(function (marker) {
-            var markerLatLng = marker.getLatLng();
-            if (bounds.contains(markerLatLng)) {
-              visibleMarkers.push(marker);
-            }
-          });
-          displayVisibleMarkersData(visibleMarkers);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
+    // get bounding box of where map starts/is (City, klamath falls).. 
+    // send bbox as param. server checks x/y each prop to see if its in box & sends client results
+    // Fetch data from the server with the bounding box parameters
+    
+    fetchGlobalPropertyData();
+
+    const refreshButton = document.getElementById("refreshButton");
+    refreshButton.addEventListener("click", function () {
+      fetchGlobalPropertyData();
+    });
 
       map.on('moveend', function () {
         var visibleMarkers = [];
@@ -1689,94 +1792,184 @@ function initializeMap() {
             visibleMarkers.push(marker);
           }
         });
+
+        mapReviewPageNumb = 0;
+        let reviewPresent = createPropertyPage(mapReviewPageNumb, propsPerPageN);
+        updateMapPropertyListNavButtons(mapReviewPageNumb, reviewPresent);
         displayVisibleMarkersData(visibleMarkers);
       });
 }
-function displayVisibleMarkersData(markers) {
+
+function addPosts(data) {
+  data.forEach((property, i) => {
+    var post = document.createElement('div');
+    post.className = 'post';
+    post.dataset.postId = property.ID;
+
+    // Create post banner image element
+    var postBanner = document.createElement('img');
+    postBanner.className = 'post-banner';
+    postBanner.src = 'images/test.jpg';
+    post.appendChild(postBanner);
+
+    // Create post-text container
+    var postText = document.createElement('div');
+    postText.className = 'post-text';
+    
+
+    // Create h1 element for property name
+    var propertyName = document.createElement('h1');
+    propertyName.id = 'landlord-name';
+    propertyName.textContent = property.Name || property.Address;
+    postText.appendChild(propertyName);
+
+    // Create h3 element for property address
+    var propertyAddress = document.createElement('h3');
+    propertyAddress.textContent = property.Address;
+    postText.appendChild(propertyAddress);
+
+    // Create room details container
+    var roomDetailsContainer = document.createElement('div');
+    roomDetailsContainer.className = 'room-details';
+
+    // Create room element for number of beds
+    var bedRoom = document.createElement('div');
+    bedRoom.className = 'room';
+    bedRoom.innerHTML = `<img src="images/bed.svg"> ${property.BedRange} beds`;
+    roomDetailsContainer.appendChild(bedRoom);
+
+    // Create room element for number of baths
+    var bathRoom = document.createElement('div');
+    bathRoom.className = 'room';
+    bathRoom.innerHTML = `<img src="images/bath.svg"> ${property.BathRange} baths`;
+    roomDetailsContainer.appendChild(bathRoom);
+
+    postText.appendChild(roomDetailsContainer);
+
+    // Create review container
+    var reviewContainer = getReviewStarContainer(property, true);
+    postText.appendChild(reviewContainer);
+
+    // Create h2 element for property price
+    var propertyPrice = document.createElement('h2');
+    propertyPrice.textContent = `Price: $${property.PriceRange} /month`;
+    postText.appendChild(propertyPrice);
+    
+    post.append(postText)
+
+    // Append the post element to the post container
+    var postContainer = document.getElementById('post-container');
+    postContainer.appendChild(post);
+  });
+}
+
+// 
+function getPropertyPages() {
+  createPropertyPage(0, propsPerPageN);
+}
+
+function createPropertyPage(curPg, propsPerPage) {
+  // Get the current map viewport's bounds
+  const bounds = map.getBounds();
+  const northEast = bounds.getNorthEast();
+  const southWest = bounds.getSouthWest();
+
+  // Prepare the bounding box information to send to the server
+  const boundingBox = {
+    minX: southWest.lng,
+    minY: southWest.lat,
+    maxX: northEast.lng,
+    maxY: northEast.lat
+  };
+
+  // Filter the propertyGlobalData array to get curatedPosts within the map bounds
+  const inBoundsPages = propertyGlobalData.filter(post => {
+    return post.X >= boundingBox.minX &&
+           post.X <= boundingBox.maxX &&
+           post.Y >= boundingBox.minY &&
+           post.Y <= boundingBox.maxY;
+  });
+
+  // sort the posts by
+  const curatedPosts = sortPropertyPages('AvgRating', 'dsc', inBoundsPages);
+  let nextPagePossible = curatedPosts[curPg*propsPerPage] != undefined;
+  updateMapPropertyListNavButtons(curPg, nextPagePossible);
+  const slicedPosts = curatedPosts.slice(curPg * propsPerPage, propsPerPage * curPg + propsPerPage);
+
+  // Call the addPosts function with the curatedPosts array
+  // Append the post element to the post container
   var postContainer = document.getElementById('post-container');
   postContainer.innerHTML = '';
+  addPosts(slicedPosts);
 
-  var markerIds = [];
-  var addresses = [];
-  // iterate through all markers, collect their ids 
-  markers.forEach(function (marker) {
-    var property = marker.options.propertyData;
+  if (Array.isArray(curatedPosts)) {
+    return curatedPosts[(curPg+1) * propsPerPage] !== undefined;
+  } else {
+    return false; // or handle the case when curatedPosts is not an array
+  }  
+}
 
-    markerIds.push(property.ID);
-    addresses.push(property.Address);
+// Returns a sorted array given a type (Rating, Date) and a order (asc, dsc)
+// Returns a sorted array given a type (Rating, Date) and a order (asc, dsc)
+function sortPropertyPages(type, order, pages) {
+  // Sort pages based on .Rating in ascending or descending order
+  pages.sort((a, b) => {
+    const valueA = a[type];
+    const valueB = b[type];
 
+    if (order === 'asc') {
+      return valueA - valueB;
+    } else if (order === 'dsc') {
+      return valueB - valueA;
+    } else {
+      // Default to no sorting
+      return 0;
+    }
   });
-  let ids = markerIds.join(',');
+
+  return pages;
+}
+
+function updateMapPropertyListNavButtons(curPg, nextPagePossible) {
+  var mapPageManager = document.getElementById('map-page-manager-container');
+  const managerNext = mapPageManager.querySelector('.next-page');
+  const managerPrev = mapPageManager.querySelector('.prev-page');
+  const managerInput = mapPageManager.querySelector('.page-input');// cont
+
+  managerPrev.style.display = curPg === 0 ? 'none' : 'initial'; 
+  managerNext.style.display = nextPagePossible ? 'initial' : 'none';
+  managerInput.value = curPg; 
+}
+
+
+function displayVisibleMarkersData(markers) { // just redo this tbh
+  var postContainer = document.getElementById('post-container');
+  postContainer.innerHTML = '';
+  
+  function fetchVisibleMarkers() {
+    // Find the intersection of existing markers and ids in idArray
+    const markerIds = markers.map(marker => marker.options.propertyData.ID);
+    const visibleMarkerIds = markerIds.filter(id => propertyGlobalData.map(property => property.ID).includes(id));
+  visibleMarkerIds
+    // Create an array to hold visible markers
+    const visibleMarkers = [];
+  
+    // Iterate through the existing markers and collect the visible ones based on the visibleMarkerIds
+    markers.forEach(function(marker) {
+      const property = marker.options.propertyData;
+      if (visibleMarkerIds.includes(property.ID)) {
+        visibleMarkers.push(property);
+        // You can also perform any other actions you need with the visible markers here
+        // For example, updating their appearance, adding them to the map, etc.
+      }
+    });
+    
+    getPropertyPages();
+    //addPosts(visibleMarkers); // need param, [PROPDETAILS, PROPDETAILS, ...]
+    console.log(visibleMarkers);
+  }
   document.getElementById('frame-container').scrollTop = 0;
-  //collect data from all visible markers
-
-  fetch('/map.html?selected=true&ids=' + ids)
-   .then(response => response.json())
-   .then(data => {
-    data.forEach((property, i) => {
-      var post = document.createElement('div');
-      post.className = 'post';
-      post.dataset.postId = property.ID;
-
-      // Create post banner image element
-      var postBanner = document.createElement('img');
-      postBanner.className = 'post-banner';
-      postBanner.src = 'images/test.jpg';
-      post.appendChild(postBanner);
-
-      // Create post-text container
-      var postText = document.createElement('div');
-      postText.className = 'post-text';
-      
-
-      // Create h1 element for property name
-      var propertyName = document.createElement('h1');
-      propertyName.id = 'landlord-name';
-      propertyName.textContent = property.Name || addresses[i];
-      postText.appendChild(propertyName);
-
-      // Create h3 element for property address
-      var propertyAddress = document.createElement('h3');
-      propertyAddress.textContent = addresses[i];
-      postText.appendChild(propertyAddress);
-
-      // Create room details container
-      var roomDetailsContainer = document.createElement('div');
-      roomDetailsContainer.className = 'room-details';
-
-      // Create room element for number of beds
-      var bedRoom = document.createElement('div');
-      bedRoom.className = 'room';
-      bedRoom.innerHTML = `<img src="images/bed.svg"> ${property.BedRange} beds`;
-      roomDetailsContainer.appendChild(bedRoom);
-
-      // Create room element for number of baths
-      var bathRoom = document.createElement('div');
-      bathRoom.className = 'room';
-      bathRoom.innerHTML = `<img src="images/bath.svg"> ${property.BathRange} baths`;
-      roomDetailsContainer.appendChild(bathRoom);
-
-      postText.appendChild(roomDetailsContainer);
-
-      // Create review container
-      var reviewContainer = getReviewStarContainer(property, true);
-      postText.appendChild(reviewContainer);
-
-      // Create h2 element for property price
-      var propertyPrice = document.createElement('h2');
-      propertyPrice.textContent = `Price: $${property.PriceRange} /month`;
-      postText.appendChild(propertyPrice);
-      
-      post.append(postText)
-
-      // Append the post element to the post container
-      var postContainer = document.getElementById('post-container');
-      postContainer.appendChild(post);
-  });
-})
-  .catch(error => {
-    console.error('Error fetching data:', error);
-  });
+  fetchVisibleMarkers(); // cont here :()
 }
 
 var initAlready = false;
@@ -1798,8 +1991,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('filter-container').style.display = 'flex';
     history.pushState(null, null, window.location.origin);
 
-    if (!initAlready) {
+    if (!initAlready) { // cont
       initializeMap();
+      addPageManagerHandlersM('map-page-manager-container', mapReviewsType, mapReviewOrder, propsPerPageN);
       initAlready = true;
     }
   });
@@ -1808,6 +2002,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (window.location.pathname === '/') {
     initializeMap();
+    addPageManagerHandlersM('map-page-manager-container', mapReviewsType, mapReviewOrder, propsPerPageN);
     initAlready = true;
   }
 });

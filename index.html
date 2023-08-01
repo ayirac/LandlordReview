@@ -142,14 +142,19 @@
     </div>
     <div id ="frame-container">
         <div id="map-container">
+            <button id="refreshButton">Refresh results</button>
             <div id="map"></div>
         </div>
-        <div id ="post-container">
-            
+        <div id="post-component">
+            <div id ="post-container"></div>
+            <div class="page-manager-container" id="map-page-manager-container">
+                <a class="prev-page" style="display: none;">Previous Page</a>
+                <input class="page-input" value="0">
+                <a class="next-page">Next Page</a>
+            </div>              
         </div>
     </div>
     <div id="property-page-container">
-
     </div>
     
 </body>
