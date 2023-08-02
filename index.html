@@ -45,83 +45,47 @@
                 <div class="form-container">
                     <div class="form-segment">
                         <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Air Conditioning
+                            <input data-tagID='1' type="checkbox" name="checkbox" />
+                            HVAC
                         </label>   
                         <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Balcony
+                            <input data-tagID='2' type="checkbox" name="checkbox" />
+                            HOA
                         </label> 
                         <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Car Charger
+                            <input data-tagID='3' type="checkbox" name="checkbox" />
+                            Gym
                         </label> 
                         <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Community Center
-                        </label> 
-                        <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Controlled Access
-                        </label>               
-                    </div>
-                    <div class="form-segment">
-                        <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
+                            <input data-tagID='4' type="checkbox" name="checkbox" />
                             Dishwasher
-                        </label>   
-                        <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Elevator
                         </label> 
                         <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Fitness Center
-                        </label> 
-                        <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Furnished
-                        </label> 
-                        <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Garage
+                            <input data-tagID='5' type="checkbox" name="checkbox" />
+                            Car Charger
                         </label>               
                     </div>
-                </div>
-                <h2>Community Type</h2>
-                <div class="form-container">
                     <div class="form-segment">
                         <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Student Housing
-                        </label>              
-                    </div>
-                    <div class="form-segment">
-                        <label class="form-control">
-                            <input type="checkbox" name="checkbox" />
-                            Eldery Housing
+                            <input data-tagID='6' type="checkbox" name="checkbox" />
+                            Gated
                         </label>   
-                    </div>
-                </div>
-                <span class="clear">Clear</span>
-            </div>
-        </div>
-        <div class="popup-container">
-            <div class="popup-button" id="rent-range-box">Rent Range <i class="fas fa-chevron-down"></i></div>
-            <div id="rent-popup-box" class="popup-box">
-                <h2>Rent Range</h2>
-                <div class="form-container">
-                    <div class="form-segment">
-                        <section class="range-slider container">
-                            <span class="left-label">$0</span>
-                            <span class="right-label">$10,000</span>
-                            <span class="output outputOne" style="left: 31.01%;">3101</span>
-                            <span class="output outputTwo" style="left: 91.88%;">9188</span>
-                            <span class="full-range"></span>
-                            <span class="incl-range" style="width: 60.87%; left: 31.01%;"></span>
-                            <input name="rangeOne" value="0" min="0" max="10000" step="1" type="range">
-                            <input name="rangeTwo" value="10000" min="0" max="10000" step="1" type="range">
-                          </section> 
+                        <label class="form-control">
+                            <input data-tagID='7' type="checkbox" name="checkbox" />
+                            Pool
+                        </label> 
+                        <label class="form-control">
+                            <input data-tagID='8' type="checkbox" name="checkbox" />
+                            Spa
+                        </label> 
+                        <label class="form-control">
+                            <input data-tagID='9' type="checkbox" name="checkbox" />
+                            Tennis Court
+                        </label> 
+                        <label class="form-control">
+                            <input data-tagID='10' type="checkbox" name="checkbox" />
+                            Parking
+                        </label>               
                     </div>
                 </div>
                 <span class="clear">Clear</span>
@@ -129,14 +93,18 @@
         </div>
         <span class="clear" style="right:20px; top:15px;">Clear</span>
         <div class="dropdown">
-            <button class="dropbtn" id="sort-drop-b">Sort: Default <i class="fas fa-chevron-down"></i></button>
+            <button data-val="default" class="dropbtn" id="sort-drop-b">Sort: Default <i class="fas fa-chevron-down"></i></button>
             <div class="dropdown-content" id="sort-drop-c">
-                <a href="#" id="default">Default</a>
-                <a href="#" id="rent-ascending">Rent (Ascending)</a>
-                <a href="#" id="rent-descending">Rent (Descending)</a>
-                <a href="#" id="average-rating">Average Rating</a>
-                <a href="#" id="amount-of-reviews">Amount of Reviews</a>
+                <a href="#" data-val="default">Default</a>
+                <a href="#" data-val="rating-asc">Rating (Ascending)</a>
+                <a href="#" data-val="rating-dsc">Rating (Descending)</a>
+                <a href="#" data-val="date-asc">Date (Ascending)</a>
+                <a href="#" data-val="date-dsc">Date (Descending)</a>
             </div>
+        </div>
+
+        <div class="filter-posts-button-cont">
+            <button class="dropbtn" id="sort-filter-get-button">Sort/Filter</button>
         </div>
         
     </div>
@@ -160,37 +128,3 @@
 </body>
 
 </html>
-
-<script>
-    var rangeOne = document.querySelector('input[name="rangeOne"]'),
-    rangeTwo = document.querySelector('input[name="rangeTwo"]'),
-    outputOne = document.querySelector('.outputOne'),
-    outputTwo = document.querySelector('.outputTwo'),
-    inclRange = document.querySelector('.incl-range'),
-    updateView = function () {
-        if (this.getAttribute('name') === 'rangeOne') {
-            outputOne.innerHTML = this.value;
-            outputOne.style.left = this.value / this.getAttribute('max') * 100 + '%';
-        } else {
-            outputTwo.style.left = this.value / this.getAttribute('max') * 100 + '%';
-            outputTwo.innerHTML = this.value
-        }
-        if (parseInt(rangeOne.value) > parseInt(rangeTwo.value)) {
-            inclRange.style.width = (rangeOne.value - rangeTwo.value) / this.getAttribute('max') * 100 + '%';
-            inclRange.style.left = rangeTwo.value / this.getAttribute('max') * 100 + '%';
-        } else {
-            inclRange.style.width = (rangeTwo.value - rangeOne.value) / this.getAttribute('max') * 100 + '%';
-            inclRange.style.left = rangeOne.value / this.getAttribute('max') * 100 + '%';
-        }
-    };
-
-    document.addEventListener('DOMContentLoaded', function () {
-        updateView.call(rangeOne);
-        updateView.call(rangeTwo);
-        $('input[type="range"]').on('mouseup', function() {
-            this.blur();
-        }).on('mousedown input', function () {
-            updateView.call(this);
-        });
-    });
-</script>

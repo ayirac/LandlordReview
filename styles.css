@@ -573,14 +573,18 @@ input[type=range]:focus {
 
 
 .dropdown {
-  width: 100%;
   box-sizing: border-box;
   max-width: 160px;
+}
+
+#sort-filter-get-button {
+  margin-right: 0px;
 }
 
 .dropbtn {
   font-size: 16px;
   font-weight: normal;
+  width: 100%;
 
   padding: 5px;
   border: 1px solid #ccc;

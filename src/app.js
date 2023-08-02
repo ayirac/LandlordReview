@@ -70,7 +70,7 @@ async function sendReviews(type, ord, pageNumber, recordsRequested, sanitizedPro
       OFFSET ${offset}`;
     reviews = await executeQuery(query);
   }
-  console.log(reviews);
+
   return reviews;
 }
 
@@ -121,8 +121,8 @@ async function calculatePropertyTags(propID) {
       console.log("thresh: " + curThresh);
       if (tag.Count >= thresh[curThresh]) {
         console.log(tag.TagID + ' and the count: ' + tag.Count);
-        passedTags.push(tag);
-        console.log(tag + ' has passed');
+        passedTags.push(tag.TagID);
+        console.log(tag.TagID + ' has passed');
         tagsTaken++;
         if (tagsTaken+1 > tagsToTake) {  // Increment thresh if tagsTaken goes past its boundary, moving to next thresh level
           if (curThresh+1 < thresh.length) {
@@ -135,49 +135,76 @@ async function calculatePropertyTags(propID) {
       }
     }
 
+    // update property tag column, update this later
+      // Convert the passedTags array to a comma-separated string
+    const tagsString = passedTags.map((tag) => tag).join(',');
+
+
+      // Execute a query to update the Properties table with the tagsString
+      const updateQuery = `
+        UPDATE Properties
+        SET Tags = ?
+        WHERE ID = ?
+      `;
+
+      // Execute the update query with tagsString as the parameter
+      console.log(tagsString);
+      console.log(propID);
+      await executeQuery(updateQuery, [tagsString, propID]);
+
+
     // Itr over passedtags and add missing passedTags from currentTags to addTags array
     const addTags = passedTags.filter((pTag) => { // PROBLEM HERE, FIX THIS!!!
       console.log(propCurrentTags);
-      const pTagExists = propCurrentTags.some((cTag) => cTag.TagID === pTag.TagID);
-      console.log('check: ' + pTag.TagID);
+      const pTagExists = propCurrentTags.some((cTag) => cTag.TagID === pTag);
+      console.log('check: ' + pTag);
       if (pTagExists) {
-        console.log('not adding: ' + pTag.TagID);
+        console.log('not adding: ' + pTag);
         return false;
       } else {
-        console.log('adding: ' + pTag.TagID);
+        console.log('adding: ' + pTag);
         return true;
       }
     });
 
     // Itr over currentTags and remove missing passedTags from currentTags to removeTags array
     const deleteTags = propCurrentTags.filter((cTag) => {
-      const cTagExists = passedTags.some((pTag) => cTag.TagID === pTag.TagID);
+      const cTagExists = passedTags.some((pTag) => cTag.TagID === pTag);
+      console.log(cTag);
       if (!cTagExists) {
         console.log('delete: ' + cTag.TagID);
         return true;
       }
     });
+    
 
     // Insert the addTags into the currentPropTags table
     for (const tag of addTags) {
+      console.log(tag);
       const checkQuery = 'SELECT COUNT(*) as count FROM PropertyTags WHERE PropertyID = ? AND TagID = ?';
-      const [result] = await executeQuery(checkQuery, [propID, tag.TagID]);
+
+      const [result] = await executeQuery(checkQuery, [propID, tag]);
+ 
       const count = result.count;
+      
       if (count === 0) {
         const insertTagQ = 'INSERT INTO PropertyTags (PropertyID, TagID) VALUES (?, ?);';
-        await executeQuery(insertTagQ, [propID, tag.TagID]);
+        await executeQuery(insertTagQ, [propID, tag]);
         console.log('Value inserted successfully.');
       }
-    }
+    } 
+
+
 
     // Delete the deleteTags from the currentPropTags table
     for (const tag of deleteTags) {
+
       const deleteTagQ = 'DELETE FROM PropertyTags WHERE PropertyID = ? AND TagID = ?;';
       await executeQuery(deleteTagQ, [propID, tag.TagID]);
     }
     
   } catch (error) {
-    handleQueryError(res, error);
+    console.log(error);
   }
 }
 
@@ -206,10 +233,19 @@ const server = http.createServer(async (req, res) => {
         const params = [minX, maxX, minY, maxY];
 
         const propResults = await executeQuery(query, params);
+
+        const queryTag = `SELECT * FROM Tags`;
+
+        const tagResults = await executeQuery(queryTag);
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        console.log(propResults);
-        res.end(JSON.stringify(propResults));
+
+        var results = {
+          propResults: propResults,
+          tagList: tagResults
+        }
+
+        res.end(JSON.stringify(results));
       } catch (error) {
         handleQueryError(res, error);
       }
