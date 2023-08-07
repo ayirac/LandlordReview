@@ -43,7 +43,6 @@ header img {
 .search-container {
   display: flex;
   flex-grow: 1;
-  margin-left: 350px;
   justify-content: center;
 }
 
@@ -267,6 +266,8 @@ nav li a:hover {
   gap: 5px;
   align-items: center;
   font-size: 14px;
+  align-self: baseline;
+  margin-top: 5px;
 }
 
 .property-details .review-container {
@@ -644,7 +645,7 @@ input[type=range]:focus {
 
 .property-details {
   display: grid;
-  grid-template-columns: repeat(2, 25%); /* Two columns with equal width */
+  grid-template-columns: repeat(2, 30%); /* Two columns with equal width */
   grid-gap: 5px;
   padding: 0px 5px 5px 10px;
   border-bottom: 1px solid #e0e0e0;
@@ -917,6 +918,11 @@ input[type=range]:focus {
   padding-right: 10px;
 }
 
+#dropdown-term {
+  position: relative;
+  width: 100%;
+}
+
 
 .property-review-date {
   color: #4d4a4a;
@@ -929,14 +935,15 @@ input[type=range]:focus {
 }
 
 #review-term-dropdown {
-  position: inherit;
+  position: absolute;
+  width: inherit;
 }
 
 .property-review-bottom-container {
   display: flex;
 }
 
-.property-review-left-container {
+.property-review-left-container { 
   flex-basis: 10%;
   display: flex;
   flex-direction: column;
@@ -944,6 +951,7 @@ input[type=range]:focus {
 
 .property-review-right-container {
   flex-basis: 90%;
+  box-shadow: 2px 3px 8px rgba(0, 0, 0, 0.2);
 }
 
 .property-review-top .star-rating-container {
@@ -1123,7 +1131,7 @@ input[type=range]:focus {
   font-weight: bold;
   margin-right: 10px;
   width: 100px; /* Adjust the width as desired */
-  align-self: baseline;
+  align-self: center;
 }
 
 .input-field {
@@ -1241,7 +1249,7 @@ table td, table th {
 
 .property-info {
   display: flex;
-  align-items: center;
+  align-items: end;
 }
 
 .property-key {
@@ -1306,6 +1314,7 @@ table td, table th {
   justify-content: center;
   gap: 5px; /* Reduce the spacing between elements */
   position: relative; /* Add relative positioning to the container */
+  padding-top: 5px;
 }
 
 /* Style for the "Previous" and "Next" links */
@@ -1349,6 +1358,7 @@ input.page-input {
   flex: 0 0 50%;
   display: flex;
   flex-direction: column;
+  height: calc(100vh - 95px);
 }
 
 #map-container {

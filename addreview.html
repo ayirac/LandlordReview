@@ -1,0 +1,189 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="styles.css">
+        <script src="src/addreview.js"></script> 
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    </head>
+    <body>
+        <div id="review-add-wrapper">
+            <h3>Leave a Review</h3>
+            <form
+                id="review-add-container"
+                action="/submit-new-apartment"
+                method="post"
+                enctype="multipart/form-data"
+            >
+                <div id="review-add-wrap">
+                    <div id="review-add-left">
+                        <div id="review-add-text-container">
+                            <div id="review-add-top">
+                                <div class="review-add-top-wrapper">
+                                    <h4>Title*:</h4>
+                                    <input
+                                        id="review-add-detail-title"
+                                        placeholder="Title..."
+                                        name="title"
+                                    />
+                                </div>
+                                <div class="review-add-top-wrapper">
+                                    <h4>Your Name:</h4>
+                                    <input
+                                        id="review-add-detail-reviewer-name"
+                                        placeholder="Anonymous"
+                                        name="reviewer-name"
+                                    />
+                                </div>
+                                <div
+                                    class="star-filter-container"
+                                    id="review-rating-select"
+                                    data-rating=""
+                                >
+                                    <div class="star-rating star-filter">☆</div>
+                                    <div class="star-rating star-filter">☆</div>
+                                    <div class="star-rating star-filter">☆</div>
+                                    <div class="star-rating star-filter">☆</div>
+                                    <div class="star-rating star-filter">☆</div>
+                                </div>
+                                <input
+                                    type="hidden"
+                                    id="hidden-rating"
+                                    name="rating"
+                                /><input
+                                    type="hidden"
+                                    id="hidden-tags"
+                                    name="tags"
+                                /><input
+                                    type="hidden"
+                                    id="hidden-term"
+                                    name="term"
+                                /><input
+                                    type="hidden"
+                                    id="hidden-prop-id"
+                                    name="prop-id"
+                                />
+                            </div>
+                            <textarea
+                                id="review-add-text"
+                                placeholder="Type your review here..."
+                                name="text"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div id="review-add-right">
+                        <div id="review-add-tag-container">
+                            <p id="header-det">Property Tags</p>
+                            <div id="review-tag-input-container">
+                                <input
+                                    id="tag-add-text"
+                                    placeholder="Type tags here..."
+                                    autocomplete="off"
+                                />
+                                <div id="tag-possible-container"></div>
+                            </div>
+                            <div class="property-tags" id="property-add-tags"></div>
+                        </div>
+                        <div id="review-add-detail-wrapper">
+                            <div id="review-add-detail-title">
+                                <p id="header-det">Optional Property Information</p>
+                            </div>
+                            <div id="review-add-detail-container">
+                                <div class="input-container">
+                                    <label class="input-title">Bedrooms</label
+                                    ><input
+                                        type="text"
+                                        name="bedrooms-input"
+                                        id="bedrooms-input"
+                                        class="input-field"
+                                        placeholder="n/a"
+                                    />
+                                </div>
+                                <div class="input-container">
+                                    <label class="input-title">Bathrooms</label
+                                    ><input
+                                        type="text"
+                                        name="bathrooms-input"
+                                        id="bathrooms-input"
+                                        class="input-field"
+                                        placeholder="n/a"
+                                    />
+                                </div>
+                                <div class="input-container">
+                                    <label class="input-title">Monthly Rent</label
+                                    ><input
+                                        type="text"
+                                        name="monthly-rent-input"
+                                        id="monthly-rent-input"
+                                        class="input-field"
+                                        placeholder="n/a"
+                                    />
+                                </div>
+                                <div class="input-container">
+                                    <label class="input-title">Security Deposit</label
+                                    ><input
+                                        type="text"
+                                        name="security-deposit-input"
+                                        id="security-deposit-input"
+                                        class="input-field"
+                                        placeholder="n/a"
+                                    />
+                                </div>
+                                <div class="input-container">
+                                    <label class="input-title">Lease Term</label>
+                                    <div class="dropdown" id="dropdown-term">
+                                        <button
+                                            id="review-add-term-dropdown"
+                                            class="dropbtn"
+                                        >
+                                            <span class="button-text">N/A</span
+                                            ><i class="fas fa-chevron-down"></i>
+                                        </button>
+                                        <div
+                                            class="dropdown-content"
+                                            id="review-term-dropdown"
+                                            style="display: none"
+                                        >
+                                            <a href="#" id="default">N/A</a
+                                            ><a href="#" id="monthly">Month to Month</a
+                                            ><a href="#" id="three-month">3 Months</a
+                                            ><a href="#" id="six-month">6 Months</a
+                                            ><a href="#" id="yearly">Yearly</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="input-container">
+                                    <label class="input-title">Address</label
+                                    ><input
+                                        type="text"
+                                        name="address-input"
+                                        id="address-input"
+                                        class="input-field"
+                                        placeholder="n/a"
+                                    />
+                                </div>
+                                <div class="input-container">
+                                    <label class="input-title">Sq Footage</label
+                                    ><input
+                                        type="text"
+                                        name="sqfootage-input"
+                                        id="sqfootage-input"
+                                        class="input-field"
+                                        placeholder="n/a"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input id="review-add-submit" type="submit" value="Submit" />
+            </form>
+        </div>
+        
+    </body>
+</html>

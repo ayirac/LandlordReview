@@ -589,6 +589,227 @@ const server = http.createServer(async (req, res) => {
       });
     }
   }
+  else if (parsedUrl.pathname === '/submit-new-apartment') {
+    if (req.method === 'POST') {
+      const form = new formidable.IncomingForm();
+
+      form.parse(req, async (err, fields) => {
+        if (err) {
+          console.error('Error parsing form data:', err);
+          res.statusCode = 400;
+          res.setHeader('Content-Typx`e', 'text/plain');
+          res.end('Bad Request');
+          return;
+        }
+
+        console.log(fields);
+
+        // Mixture of XSS sanitizaton & input validation for ints/floats
+        const rating = fields['rating'];
+        const revName = xss(fields['name']);
+        const title = xss(fields['title']);
+        const text = xss(fields['text']);
+        const tags = xss(fields['tags']);
+        const bedrooms = parseInt(fields['bedrooms']);
+        const bathrooms = parseInt(fields['bathrooms']);
+        const rent = parseInt(fields['rent'], 10);
+        const deposit = parseInt(fields['deposit'], 10);
+        const term = xss(fields['term']);
+        const address = xss(fields['address']);
+        const sqfootage = parseInt(fields['sqfootage']);
+
+        const sanitizedBedrooms = isNaN(bedrooms) ? -1 : bedrooms;
+        const sanitizedBathrooms = isNaN(bathrooms) ? -1 : bathrooms;
+        const sanitizedRent = isNaN(rent) ? -1 : rent;
+        const sanitizedDeposit = isNaN(deposit) ? -1 : deposit;
+
+        const handleError = (errorMessage, statusCode) => {
+          console.error(errorMessage);
+          res.statusCode = statusCode;
+          res.setHeader('Content-Type', 'text/plain');
+          res.end(errorMessage);
+        };
+        
+        if (title.length > 64) {
+          handleError('Title length exceeds the limit', 400);
+          return;
+        }
+
+        async function addressToLatLong(addr) {
+          let nominAPI = `https://nominatim.openstreetmap.org/search?q=${addr}&format=json`;
+
+          try {
+            console.log(`trying to access ${nominAPI}`);
+            const response = await fetch(nominAPI);
+            const data = await response.json();
+            console.log(data);
+            if (data.length === 1) {
+              const lat = parseFloat(data[0].lat);
+              const long = parseFloat(data[0].lon);
+              const name = data[0].display_name;
+
+              return {lat, long, name};
+            }
+            return null;
+
+            console.log(data);
+          } catch (error) {
+            console.log('Nominatim error:', error);
+            return null;
+          }
+        }
+
+        async function addressExistsInDB(n) {
+          const query = 'SELECT COUNT(*) as count FROM Properties WHERE Address = ?';
+          const result = await executeQuery(query, [n])
+          
+          console.log(result);
+          return result[0].count > 0;
+        }
+        
+
+        async function addressExists(addr) {
+          let propertyCoordinates = await addressToLatLong(addr);
+          return propertyCoordinates;
+        }
+        
+        var propertyCoordinates = await addressExists(address);
+        var aptAlreadyExistsInDB;
+        if (propertyCoordinates != null)
+          aptAlreadyExistsInDB = await addressExistsInDB(propertyCoordinates.name);
+        else 
+          aptAlreadyExistsInDB = true;
+        if (propertyCoordinates === null || aptAlreadyExistsInDB) {
+          handleError('Address not valid', 400);
+          return;
+        }
+        
+        if (revName.length > 64) {
+          handleError('Reviewer name length exceeds the limit', 400);
+          return;
+        }
+        
+        if (text.length > 5000) {
+          handleError('Review text length exceeds the limit', 400);
+          return;
+        }
+        
+        if (tags.length > 255) {
+          console.warn('Tags length exceeds the limit, truncating');
+          tags = tags.substring(0, 255); // cut to 0-255
+          tags = tags.substring(0, tags.lastIndexOf(' ')); // cut to last whole word
+        }
+        
+        const validateValue = (value, minValue, maxValue, errorMessage) => {
+          if (value < minValue || value > maxValue) {
+            handleError(errorMessage, 400);
+            return true;
+          }
+          return false;
+        };
+        
+        if (validateValue(bedrooms, 0, 20, 'Invalid bedrooms value')) {
+          return;
+        }
+        
+        if (validateValue(bathrooms, 0, 20, 'Invalid bathrooms value')) {
+          return;
+        }
+        
+        if (validateValue(rent, 0, 15000.0, 'Invalid monthly rent value')) {
+          return;
+        }
+        
+        if (validateValue(deposit, 0, 15000.0, 'Invalid security deposit value')) {
+          return;
+        }
+        
+        const validTerms = ['N/A', 'Month to Month', '3 Months', '6 Months', 'Yearly'];
+
+        if (!validTerms.includes(term)) {
+          handleError('Invalid lease term', 400);
+          return;
+        }
+        
+        if (isNaN(rating) || rating < 1 || rating > 5) {
+          handleError('Invalid rating value', 400);
+          return;
+        }
+        
+        // Send a response to the client
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'text/plain');
+        res.end('Received the form data');
+
+        try {
+                  
+          // alright, i got lat/long, time to make apartment
+          let query = `INSERT INTO Properties (Name, X, Y, Address, AvgRating, RatingCount, LeaseTerm, Nearby, BedRange, BathRange, SqFootageRange, PriceRange, Tags)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+          let result = await executeQuery(query, [revName, propertyCoordinates.long, propertyCoordinates.lat, propertyCoordinates.name, rating, 1, term, 'none', bedrooms, bathrooms, sqfootage.toString(), rent.toString(), tags]);
+          const createdPropID = result.insertId;
+
+          let queryReviewIns = `INSERT INTO Reviews (PropertyID, ReviewerName, Rating, Title, Text, Tags, Bedrooms, Bathrooms, Rent, Deposit, LeaseTerm, Date)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_DATE())`; // date needs to be the current date!
+
+          await executeQuery(queryReviewIns, [createdPropID, revName, rating, title, text, tags, bedrooms, bathrooms, rent, deposit, term]);
+
+      
+      } catch (error) {
+          // Handle errors here
+          console.error('Error inserting data:', error);
+      }
+      
+
+
+        // alright after making apartment, i got the apartment id time to make a review attached to that apartID
+
+      });
+    }
+  }
+  else if (parsedUrl.pathname === '/search') {
+    if (parsedUrl.searchParams.has('q')) {
+      const userQuery = parsedUrl.searchParams.get('q');
+      console.log('User is searching: ' + userQuery);
+
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(userQuery)}&format=json`);
+        const data = await response.json();
+
+        if (data.length > 0) {
+          const boundingBox = data[0].boundingbox;
+          const queryResult = {
+            bottomLeft: {
+              lat: parseFloat(boundingBox[0]),
+              lon: parseFloat(boundingBox[2])
+            },
+            topRight: {
+              lat: parseFloat(boundingBox[1]),
+              lon: parseFloat(boundingBox[3])
+            }
+          };
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(queryResult));
+        } else {
+          res.statusCode = 404;
+          res.setHeader('Content-Type', 'text/plain');
+          res.end('No results found for the query');
+        }
+      } catch (error) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'text/plain');
+        res.end('Internal Server Error');
+        console.error(error);
+      }
+    } else {
+      console.log('d');
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('Bad Request: Missing query parameter');
+    }
+  }
   else {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/plain');

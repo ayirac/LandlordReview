@@ -723,7 +723,8 @@ function createPropertyAddComponent() {
     { label: 'Bathrooms', id: 'bathrooms-input', placeholder: 'n/a' }, // cap 10
     { label: 'Monthly Rent', id: 'monthly-rent-input', placeholder: 'n/a' }, // 4000 
     { label: 'Security Deposit', id: 'security-deposit-input', placeholder: 'n/a' },
-    { label: 'Lease Term', id: 'term-input', placeholder: 'n/a' } // select from Monthly, 3 month, 6 month, yearly
+    { label: 'Lease Term', id: 'term-input', placeholder: 'n/a' }, // select from Monthly, 3 month, 6 month, yearly
+    { label: 'Sq Footage', id: 'sqfootage-input', placeholder: 'n/a' }
   ];
 
   propertyDetails.forEach(detail => {
@@ -1022,18 +1023,25 @@ function openPropertyPage(id) {
       var propertyDetails = document.createElement('div');
       propertyDetails.className = 'property-details';
 
+      var propertyNameCont = document.createElement('div');
+      propertyNameCont.className = 'property-name-cont';
+
       var propertyName = document.createElement('p');
       propertyName.className = 'property-name';
       propertyName.innerText = data.PropertyData[0].Name;
-      propertyDetails.append(propertyName);
-
-      var propReviewCont = getReviewStarContainer(data.PropertyData[0], true);
-      propertyDetails.append(propReviewCont);
+      propertyNameCont.append(propertyName);
+      
+      propertyDetails.append(propertyNameCont);
 
       var propertyAddress = document.createElement('p');
       propertyAddress.className = 'property-address';
       propertyAddress.innerText = data.PropertyData[0].Address;
-      propertyDetails.append(propertyAddress);
+      propertyNameCont.append(propertyAddress);
+
+      propertyDetails.append(propertyNameCont);
+
+      var propReviewCont = getReviewStarContainer(data.PropertyData[0], true);
+      propertyDetails.append(propReviewCont);
 
       var leaseTermDiv = document.createElement('div');
       leaseTermDiv.className = 'property-info';
@@ -1739,7 +1747,61 @@ function initializeMap() {
       // Do whatever you want with the commaSeparatedList here (e.g., update a search filter, display it on the page, etc.)
     });
 
-    //here
+    // search box handler
+    // Get references to the input and button elements
+    const searchInput = document.getElementById('search-input');
+    const searchButton = document.getElementById('search-button');
+
+    // Function to handle the search
+    // Function to handle the search
+function performSearch() {
+  const query = searchInput.value.trim(); // Get the search query from the input
+  if (query !== '') {
+      // Send the search query to your server using fetch
+      fetch(`/search?q=${encodeURIComponent(query)}`, {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error(`Request failed with status: ${response.status}`);
+          }
+          return response.json();
+      })
+      .then(data => {
+          console.log('Server response:', data);
+
+          // Define the bounding box corners
+          const southWest = L.latLng(data.bottomLeft.lat, data.bottomLeft.lon);
+          const northEast = L.latLng(data.topRight.lat, data.topRight.lon);
+
+          // Create a LatLngBounds object
+          const bounds = L.latLngBounds(southWest, northEast);
+
+          // Fit the map's view to the bounding box
+          map.fitBounds(bounds);
+
+          // Load new property data given the bounding box
+          fetchGlobalPropertyData();
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+  }
+}
+
+
+    // Add event listeners for button click and Enter key press
+    searchButton.addEventListener('click', performSearch);
+    searchInput.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent page refresh
+            performSearch();
+        }
+    });
+
 
 
     // Add click event listeners to the popup elements
@@ -1860,7 +1922,7 @@ function addPosts(data) {
     // Create post banner image element
     var postBanner = document.createElement('img');
     postBanner.className = 'post-banner';
-    postBanner.src = 'images/test.jpg';
+    postBanner.src = 'images/placeholder-home.png';
     post.appendChild(postBanner);
 
     // Create post-text container
@@ -2074,9 +2136,6 @@ document.addEventListener('DOMContentLoaded', () => {
         checkboxes.forEach(function (checkbox) {
           checkbox.checked = false;
         });
-        let reviewPresent = createPropertyPage(mapReviewPageNumb, propsPerPageN);
-        updateMapPropertyListNavButtons(mapReviewPageNumb, reviewPresent);
-        displayVisibleMarkersData();
       });
   // Check if the current page is the home page ("/")
   const urlParams = new URLSearchParams(window.location.search);
