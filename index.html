@@ -22,16 +22,18 @@
 <body>
     <header>
         <div id="logo-container">
-            <img src="/images/logo.png">
-        </div>
+            <a href="/">
+                <img src="/images/logo.png" alt="Logo">
+            </a>
+        </div>        
         <div class="search-container">
             <input id="search-input" type="text" placeholder="Search...">
             <button id="search-button" type="submit"><i class="fa fa-search"></i></button>
         </div>
         <nav>
             <ul>
-                <li><a href="#">Contact</a></li>
-                <li><a href="#">Review Apartment</a></li>
+                <li><a href="/contact.html">Contact</a></li>
+                <li><a href="/addreview.html">Review Apartment</a></li>
             </ul>
         </nav>
     </header>
@@ -91,7 +93,9 @@
         </div>
         <span class="clear" style="right:20px; top:15px;">Clear</span>
         <div class="dropdown">
-            <button data-val="default" class="dropbtn" id="sort-drop-b">Sort: Default <i class="fas fa-chevron-down"></i></button>
+            <button data-val="default" class="dropbtn" id="sort-drop-b">
+                <span class="inner-button-text">Sort: Default</span>
+                <i class="fas fa-chevron-down"></i></button>
             <div class="dropdown-content" id="sort-drop-c">
                 <a href="#" data-val="default">Default</a>
                 <a href="#" data-val="rating-asc">Rating (Ascending)</a>

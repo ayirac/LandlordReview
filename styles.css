@@ -575,8 +575,8 @@ input[type=range]:focus {
 
 .dropdown {
   box-sizing: border-box;
-  max-width: 160px;
 }
+
 
 #sort-filter-get-button {
   margin-right: 0px;
@@ -920,6 +920,7 @@ input[type=range]:focus {
 
 #dropdown-term {
   position: relative;
+  max-width: 165px;
   width: 100%;
 }
 
@@ -1053,6 +1054,7 @@ input[type=range]:focus {
 
 #review-add-wrapper h3 {
   margin: 5px 0px 0px 5px;
+  padding-top: 45px;
 }
 
 #review-add-left {
@@ -1370,4 +1372,23 @@ input.page-input {
   top: 10px; /* Adjust the top value to position the button where you want */
   right: 10px; /* Adjust the right value to position the button where you want */
   z-index: 1000; /* Ensure the button appears above the map */
+}
+
+.address-container {
+  position: relative;
+}
+
+.truncated-address {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.full-address {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
 }

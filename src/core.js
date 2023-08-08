@@ -1714,6 +1714,7 @@ function initializeMap() {
     const dropDownButton = document.getElementById('sort-drop-b')
     const dropDownBox = document.getElementById('sort-drop-c')
     var postContainer = document.getElementById('post-container');
+    const dropDownButtonTextTop = dropDownButton.querySelector('.inner-button-text')
 
     const urlParams = new URLSearchParams(window.location.search);
     const propertyId = urlParams.get('id');
@@ -1849,7 +1850,7 @@ function performSearch() {
         event.preventDefault();
         var clickedItem = event.target;
         var itemId = clickedItem.id;
-        dropDownButton.innerHTML = clickedItem.innerHTML;
+        dropDownButtonTextTop.innerHTML = clickedItem.innerHTML;
         dropDownButton.dataset.val = clickedItem.dataset.val;
         
       });
@@ -1886,7 +1887,7 @@ function performSearch() {
       }
     });
 
-    map = L.map('map', {attributionControl: false}).setView([42.23, -121.78], 13);
+    map = L.map('map', { attributionControl: false }).setView([39.8283, -98.5795], 4);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -1920,6 +1921,12 @@ function performSearch() {
       });
 }
 
+function truncateAddress(address, maxLen) {
+  if (address.length > maxLen)
+    return address.slice(0, maxLen) + '...';
+  return address;
+}
+
 function addPosts(data) {
   console.log('adding posts');
   console.log(data)
@@ -1948,11 +1955,23 @@ function addPosts(data) {
     propertyName.textContent = property.Name || property.Address;
     postText.appendChild(propertyName);
 
-    // Create h3 element for property address
-    var propertyAddress = document.createElement('h3');
-    propertyAddress.textContent = property.Address;
-    postText.appendChild(propertyAddress);
+    // Create address container
+    var addressContainer = document.createElement('div');
+    addressContainer.className = 'address-container';
 
+    // Create truncated address element
+    var truncatedAddress = document.createElement('div');
+    truncatedAddress.className = 'truncated-address';
+    truncatedAddress.textContent = truncateAddress(property.Address, 50); // Adjust the length as needed
+    addressContainer.appendChild(truncatedAddress);
+
+    // Create full address element
+    var fullAddress = document.createElement('div');
+    fullAddress.className = 'full-address hidden';
+    fullAddress.textContent = property.Address;
+    addressContainer.appendChild(fullAddress);
+
+    postText.appendChild(addressContainer);
     // Create room details container
     var roomDetailsContainer = document.createElement('div');
     roomDetailsContainer.className = 'room-details';
@@ -2063,6 +2082,36 @@ function createPropertyPage(curPg, propsPerPage) {
   postContainer.innerHTML = '';
   addPosts(slicedPosts);
 
+// Adr hover handlers
+const posts = document.querySelectorAll('.post');
+
+posts.forEach(post => {
+    const truncatedAddress = post.querySelector('.truncated-address');
+    const fullAddress = post.querySelector('.full-address');
+
+    let timeoutLeave, timeoutEnter;
+
+    post.addEventListener('mouseover', () => {
+      timeoutEnter = setTimeout(() => {
+        clearTimeout(timeoutLeave); // Clear any previous timeout
+        truncatedAddress.classList.add('hidden');
+        fullAddress.classList.remove('hidden');
+      }, 1000);
+    });
+
+    post.addEventListener('mouseout', () => {
+      clearTimeout(timeoutEnter);
+      timeoutLeave = setTimeout(() => {
+            truncatedAddress.classList.remove('hidden');
+            fullAddress.classList.add('hidden');
+        }, 500); // Show full address after 2 seconds
+    });
+});
+
+
+
+
+
   if (Array.isArray(filteredPages)) {
     return filteredPages[(curPg+1) * propsPerPage] !== undefined;
   } else {
@@ -2123,11 +2172,31 @@ function displayVisibleMarkersData() { // just redo this tbh
   
   globalVisiblePosts.forEach(property => {
     // create markers
-    var marker =  new customMarker(new L.LatLng(property.Y, property.X), {
-      propertyData: property
+    var marker = new customMarker(new L.LatLng(property.Y, property.X), {
+        propertyData: property
     }).addTo(cluster);
-    // Customize the marker if needed
-    // marker.bindPopup(property.Address);
+
+    let starRatingCont = getReviewStarContainer(property, true);
+    
+    // Create the content for the popup
+    const popupContent = `
+    <div class="popup-container">
+        <div class="post-text">
+            <h1>${property.Name}</h1>
+            <h3>${property.Address}</h3>
+            <div class="room-details">
+                <div class="room"><img src="images/bed.svg"> ${property.BedRange} beds</div>
+                <div class="room"><img src="images/bath.svg"> ${property.BathRange} baths</div>
+            </div>
+            ${starRatingCont.outerHTML}
+            </div>
+            <h2>Price: $${property.PriceRange} /month</h2>
+        </div>
+    </div>
+`;
+    
+    // Bind the popup to the marker
+    marker.bindPopup(popupContent);
   });
 }
 
@@ -2152,25 +2221,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check if the current page is the home page ("/")
   const urlParams = new URLSearchParams(window.location.search);
   const propertyId = urlParams.get('id');
+  
   // init shit, reoganize this
-
-  const logoContainer = document.getElementById('logo-container');
-  const frameContainer = document.getElementById('frame-container');
-  const propertPageCont = document.getElementById('property-page-container');
-
-  // Clicked on logo handler
-  logoContainer.addEventListener('click', function() {
-    frameContainer.style.display = 'flex';
-    propertPageCont.style.display = 'none';
-    document.getElementById('filter-container').style.display = 'flex';
-    history.pushState(null, null, window.location.origin);
-
-    if (!initAlready) { // cont
-      initializeMap();
-      addPageManagerHandlersM('map-page-manager-container', propsPerPageN);
-      initAlready = true;
-    }
-  });
   if (propertyId) {
     openPropertyPage(propertyId);
   }

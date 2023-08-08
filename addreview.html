@@ -12,6 +12,23 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     </head>
     <body>
+        <header>
+            <div id="logo-container">
+                <a href="/">
+                    <img src="/images/logo.png" alt="Logo">
+                </a>
+            </div>    
+            <div class="search-container">
+                <input id="search-input" type="text" placeholder="Search...">
+                <button id="search-button" type="submit"><i class="fa fa-search"></i></button>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="/contact.html">Contact</a></li>
+                    <li><a href="/addreview.html">Review Apartment</a></li>
+                </ul>
+            </nav>
+        </header>
         <div id="review-add-wrapper">
             <h3>Leave a Review</h3>
             <form
@@ -29,6 +46,7 @@
                                     <input
                                         id="review-add-detail-title"
                                         placeholder="Title..."
+                                        class="input-field"
                                         name="title"
                                     />
                                 </div>
@@ -37,7 +55,18 @@
                                     <input
                                         id="review-add-detail-reviewer-name"
                                         placeholder="Anonymous"
+                                        class="input-field"
                                         name="reviewer-name"
+                                    />
+                                </div>
+                                <div class="review-add-top-wrapper">
+                                    <h4>Address:</h4>
+                                    <input
+                                        type="text"
+                                        name="address-input"
+                                        id="address-input"
+                                        class="input-field"
+                                        placeholder="n/a"
                                     />
                                 </div>
                                 <div
@@ -156,16 +185,6 @@
                                             ><a href="#" id="yearly">Yearly</a>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="input-container">
-                                    <label class="input-title">Address</label
-                                    ><input
-                                        type="text"
-                                        name="address-input"
-                                        id="address-input"
-                                        class="input-field"
-                                        placeholder="n/a"
-                                    />
                                 </div>
                                 <div class="input-container">
                                     <label class="input-title">Sq Footage</label
