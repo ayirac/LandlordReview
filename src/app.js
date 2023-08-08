@@ -55,20 +55,20 @@ async function sendReviews(type, ord, pageNumber, recordsRequested, sanitizedPro
     const query = `
       SELECT * 
       FROM Reviews 
-      WHERE PropertyID IN (${sanitizedPropertyID})
+      WHERE PropertyID IN (?)
       ORDER BY ID ${order}
-      LIMIT ${recordsRequested}
-      OFFSET ${offset} `;
-    reviews = await executeQuery(query);
+      LIMIT ?
+      OFFSET ?`;
+    reviews = await executeQuery(query, [sanitizedPropertyID, recordsRequested, offset]);
   } else if (type === 'rating') {
     const query = `
       SELECT * 
       FROM Reviews 
-      WHERE PropertyID IN (${sanitizedPropertyID})
+      WHERE PropertyID IN (?)
       ORDER BY Rating ${order}
-      LIMIT ${recordsRequested}
-      OFFSET ${offset}`;
-    reviews = await executeQuery(query);
+      LIMIT ?
+      OFFSET ?`;
+    reviews = await executeQuery(query, [sanitizedPropertyID, recordsRequested, offset]);
   }
 
   return reviews;
@@ -259,10 +259,10 @@ const server = http.createServer(async (req, res) => {
         try { // SANTIZE HERE
           const query = `SELECT * 
           FROM Properties 
-          WHERE ID IN (${propertyIds}) 
-          ORDER BY FIELD(ID, ${propertyIds})`;
+          WHERE ID IN (?) 
+          ORDER BY FIELD(ID, ?)`;
 
-          const propSpecResults = await executeQuery(query);
+          const propSpecResults = await executeQuery(query, [propertyIds, propertyIds]);
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify(propSpecResults));
@@ -285,10 +285,10 @@ const server = http.createServer(async (req, res) => {
         try { 
           const query = `SELECT * 
           FROM Properties 
-          WHERE ID IN (${sanitizedID}) 
-          ORDER BY FIELD(ID, ${sanitizedID})`;
+          WHERE ID IN (?) 
+          ORDER BY FIELD(ID, ?)`;
 
-          propData = await executeQuery(query);
+          propData = await executeQuery(query, [sanitizedID, sanitizedID]);
         } catch (error) {
           handleQueryError(res, error);
         }
@@ -296,10 +296,10 @@ const server = http.createServer(async (req, res) => {
         try {
           const query = `SELECT * 
           FROM FloorPlans 
-          WHERE PropertyID IN (${sanitizedID}) 
-          ORDER BY FIELD(ID, ${sanitizedID})`;
+          WHERE PropertyID IN (?) 
+          ORDER BY FIELD(ID, ?)`;
 
-          propFpData = await executeQuery(query);
+          propFpData = await executeQuery(query, [sanitizedID, sanitizedID]);
           } catch (error) {
             handleQueryError(res, error);
           }
@@ -316,9 +316,9 @@ const server = http.createServer(async (req, res) => {
         try { 
           const query = `SELECT * 
           FROM PropertyTags 
-          WHERE PropertyID IN (${sanitizedID})`;
+          WHERE PropertyID IN (?)`;
 
-          propTags = await executeQuery(query);
+          propTags = await executeQuery(query, [sanitizedID]);
         } catch (error) {
           handleQueryError(res, error);
         }
@@ -530,9 +530,9 @@ const server = http.createServer(async (req, res) => {
           // Get reviews data
           const query = `SELECT * 
           FROM Reviews 
-          WHERE PropertyID IN (${sanitizedID})`;
+          WHERE PropertyID IN (?)`;
 
-          propReviews = await executeQuery(query);
+          propReviews = await executeQuery(query [sanitizedID]);
           
           // Calculate sum & avg
           let revSum = 0, revCount;
@@ -643,16 +643,17 @@ const server = http.createServer(async (req, res) => {
             const response = await fetch(nominAPI);
             const data = await response.json();
             console.log(data);
-            if (data.length === 1) {
-              const lat = parseFloat(data[0].lat);
-              const long = parseFloat(data[0].lon);
-              const name = data[0].display_name;
+            const filteredData = data.filter(item => item.importance >= 0.1);
+            if (filteredData.length === 1) {
+              const lat = parseFloat(filteredData[0].lat);
+              const long = parseFloat(filteredData[0].lon);
+              const name = filteredData[0].display_name;
 
               return {lat, long, name};
             }
             return null;
 
-            console.log(data);
+            console.log(filteredData);
           } catch (error) {
             console.log('Nominatim error:', error);
             return null;

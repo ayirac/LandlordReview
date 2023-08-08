@@ -427,7 +427,7 @@ var savedThresh = 0.0; // good
 
 var dataStream = {};
 
-function sortPropertyPageReviews(type, order, pagenumb, id) {
+async function sortPropertyPageReviews(type, order, pagenumb, id) {
   return fetch('/getreviews.html?type=' + type + '&order=' + order + '&pagenumb=' + pagenumb + '&id=' + id)
     .then(response => response.json())
     .then(da => { 
@@ -1312,6 +1312,7 @@ function openPropertyPage(id) {
           toggleBox(dropDownBox);
 
           // check if prev page / next page buttons should be removed, i.e reviews = 0 HERE
+          const reviewsPageManagerCont = document.getElementById('reviews-page-manager-container');
           const managerNext = reviewsPageManagerCont.querySelector('.next-page');
           const managerPrev = reviewsPageManagerCont.querySelector('.prev-page');
           const managerInput = reviewsPageManagerCont.querySelector('.page-input');
@@ -1591,7 +1592,7 @@ function openPropertyPage(id) {
               stars[i].textContent = '☆';
             }
           });
-          star.addEventListener('click', () => {
+          star.addEventListener('click', async () => {
             // ok lazy check here, check if star-filter-container is in 
             // review-add-top, if so- just have it set the stars value
             filteredStars = index+1;
@@ -1609,10 +1610,21 @@ function openPropertyPage(id) {
               reviewRightCont.prepend(reviewsContainer);
 
               // check if prev page / next page buttons should be removed, i.e reviews = 0 HERE
+              const reviewsPageManagerCont = document.getElementById('reviews-page-manager-container');
               const managerNext = reviewsPageManagerCont.querySelector('.next-page');
               const managerPrev = reviewsPageManagerCont.querySelector('.prev-page');
               const managerInput = reviewsPageManagerCont.querySelector('.page-input');
 
+              console.log(dataStream);
+              if (typeof dataStream === 'undefined' || (Object.keys(dataStream).length === 0 && dataStream.constructor === Object)   ) {
+                console.log('k');
+                try {
+                  await sortPropertyPageReviews(type, order, pagenumb, id);
+                } catch (e) {
+                  console.log(e);
+                }
+              }
+              
               if (dataStream.Reviews.length === 0) {
                 managerPrev.style.display = 'none';
               } else {
