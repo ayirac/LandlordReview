@@ -4,7 +4,7 @@
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "mysql": "^2.18.1",
-    "mysql2": "^3.5.1",
+    "mysql2": "^3.6.0",
     "query-string": "^8.1.0",
     "querystring": "^0.2.1",
     "xss": "^1.0.14"

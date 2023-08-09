@@ -1380,7 +1380,6 @@ input.page-input {
 
 .truncated-address {
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
   cursor: pointer;
 }
