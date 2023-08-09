@@ -2082,31 +2082,30 @@ function createPropertyPage(curPg, propsPerPage) {
   postContainer.innerHTML = '';
   addPosts(slicedPosts);
 
-// Adr hover handlers
-const posts = document.querySelectorAll('.post');
+  // Adr hover handlers
+  const posts = document.querySelectorAll('.post');
+  posts.forEach(post => {
+      const truncatedAddress = post.querySelector('.truncated-address');
+      const fullAddress = post.querySelector('.full-address');
 
-posts.forEach(post => {
-    const truncatedAddress = post.querySelector('.truncated-address');
-    const fullAddress = post.querySelector('.full-address');
+      let timeoutLeave, timeoutEnter;
 
-    let timeoutLeave, timeoutEnter;
+      post.addEventListener('mouseover', () => {
+        timeoutEnter = setTimeout(() => {
+          clearTimeout(timeoutLeave); // Clear any previous timeout
+          truncatedAddress.classList.add('hidden');
+          fullAddress.classList.remove('hidden');
+        }, 1000);
+      });
 
-    post.addEventListener('mouseover', () => {
-      timeoutEnter = setTimeout(() => {
-        clearTimeout(timeoutLeave); // Clear any previous timeout
-        truncatedAddress.classList.add('hidden');
-        fullAddress.classList.remove('hidden');
-      }, 1000);
-    });
-
-    post.addEventListener('mouseout', () => {
-      clearTimeout(timeoutEnter);
-      timeoutLeave = setTimeout(() => {
-            truncatedAddress.classList.remove('hidden');
-            fullAddress.classList.add('hidden');
-        }, 500); // Show full address after 2 seconds
-    });
-});
+      post.addEventListener('mouseout', () => {
+        clearTimeout(timeoutEnter);
+        timeoutLeave = setTimeout(() => {
+              truncatedAddress.classList.remove('hidden');
+              fullAddress.classList.add('hidden');
+          }, 500); // Show full address after 2 seconds
+      });
+  });
 
 
 
