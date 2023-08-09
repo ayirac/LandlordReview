@@ -1,8 +1,0 @@
-Dear Dr. Li,
-
-I hope you're having a nice summer. I was curious about the potential independent research opporutunity focusing on vulnerable systems implementing token authentication for this fall semester. The GhostToken
-exploit was the result of a developer oversight in which applications tied to google cloud projects that are in a delete state are hidden from the user view resulting in malicious apps being able to become invisible at will.
-I also read about a recent attack against US Department of Defense email inboxes in which attackers were able to attain access by using a stolen consumer key that shouldn't of been usable for signing forged tokens.
-Ultimately, this was the result of a 'validation error in Microsoft code'. A lot of these exploits seem to be tied to the fact that the systems weren't fully tested and the developers who implemented the
-initial code weren't aware of the potential vulnerabilities that they were creating. Also, both of these exploits require some sort of previous exploit/social engineering to get a user to validate an application or an consumer
-signing key so they might not be tested as rigirously compared to exploits that have no pre-requisite. It would be interesting to do an indepth study on common products that might have some overlooked issues, like an Amazon echo or similar IoT device.

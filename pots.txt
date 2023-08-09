@@ -1,8 +1,0 @@
-Potions
-28	Potion of Radiance Resistance
-01	Potion of Greater Healing
-02	Unknown potion of fire breath
-55	Scroll of invisibility!
-18	Unknown kiestra task list
-60	scroll of rugs (?)
-95	crossbow of flying fist
